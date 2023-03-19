@@ -1,6 +1,5 @@
 #include <Arduino.h>
 #include "ThreadHandler.h"
-#include "SdFat.h"
 
 
 void setup() {
