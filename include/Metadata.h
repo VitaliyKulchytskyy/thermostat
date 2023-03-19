@@ -11,12 +11,12 @@
  */
 class Metadata final: FormatBase {
 private:
-    //const DateFormat& m_date;
-    //const TemperatureFormat& m_temp;
-    //const LogFormat& m_log;
+    const DateFormat m_date;
+    const TemperatureFormat m_temp;
+    const LogFormat m_log;
 public:
     Metadata() = default;
-    //Metadata(const DateFormat &mDate, const TemperatureFormat &mTemp, const LogFormat &mLog);
+    Metadata(DateFormat &mDate, TemperatureFormat &mTemp, LogFormat &mLog);
 public:
     uint8_t *serialize() const override;
 

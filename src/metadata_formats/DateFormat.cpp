@@ -1,17 +1,8 @@
 #include "Arduino.h"
 #include "metadata_formats/DateFormat.h"
 
-iarduino_RTC DateFormat::m_clock = RTC_DS1307;
+iarduino_RTC DateFormat::m_clock = RTC_DS3231;
 
-DateFormat::DateFormat() {
-    m_clock.begin();
-    Day = m_clock.day;
-    Month = m_clock.month;
-    Year = m_clock.year;
-    Hours = m_clock.hours;
-    Minutes = m_clock.minutes;
-    Seconds = m_clock.seconds;
-}
 
 uint8_t* DateFormat::serialize() const {
     auto* output = new uint8_t[FORMAT_VOLUME]{};
@@ -27,6 +18,8 @@ uint8_t* DateFormat::serialize() const {
 }
 
 void DateFormat::toSerial() const {
+    m_clock.begin();
+
     // DD.MM.20YY HH:MM:SS
     Serial.print(Day);
     Serial.print(".");
@@ -49,4 +42,17 @@ void DateFormat::updateClock(uint8_t day,   uint8_t month,   uint8_t year,
 
 size_t DateFormat::formatSize() const {
     return FORMAT_VOLUME;
+}
+
+DateFormat& DateFormat::readTime() {
+    m_clock.begin();
+
+    Day     = m_clock.day;
+    Month   = m_clock.month;
+    Year    = m_clock.year;
+    Hours   = m_clock.hours;
+    Minutes = m_clock.minutes;
+    Seconds = m_clock.seconds;
+
+    return *this;
 }

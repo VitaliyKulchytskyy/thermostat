@@ -45,16 +45,6 @@ public:
     uint8_t Seconds = 0;
 public:
     DateFormat() = default;
-
-    DateFormat(uint8_t day,   uint8_t month,   uint8_t year,
-               uint8_t hours, uint8_t minutes, uint8_t seconds)
-            : Day(day),
-              Month(month),
-              Year(year),
-              Hours(hours),
-              Minutes(minutes),
-              Seconds(seconds) {
-    }
 public:
     uint8_t *serialize() const override;
 
@@ -64,4 +54,6 @@ public:
 
     static void updateClock(uint8_t day,   uint8_t month,   uint8_t year,
                             uint8_t hours, uint8_t minutes, uint8_t seconds);
+
+    DateFormat& readTime();
 };

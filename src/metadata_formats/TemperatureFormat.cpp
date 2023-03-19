@@ -2,11 +2,6 @@
 #include "metadata_formats/TemperatureFormat.h"
 
 
-TemperatureFormat::TemperatureFormat() {
-    InsideTemp = analogRead(INSIDE_THERMOMETER_PIN);
-    OutsideTemp = analogRead(OUTSIDE_THERMOMETER_PIN);
-}
-
 uint8_t* TemperatureFormat::serialize() const {
     auto* output = new uint8_t[FORMAT_VOLUME]{};
 
@@ -26,4 +21,11 @@ void TemperatureFormat::toSerial() const {
 
 size_t TemperatureFormat::formatSize() const {
     return FORMAT_VOLUME;
+}
+
+TemperatureFormat& TemperatureFormat::readTemperature() {
+    InsideTemp = 80;//analogRead(INSIDE_THERMOMETER_PIN);
+    OutsideTemp = analogRead(OUTSIDE_THERMOMETER_PIN);
+
+    return *this;
 }

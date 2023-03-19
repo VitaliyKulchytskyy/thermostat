@@ -9,9 +9,10 @@
 class SaveHandler {
 private:
     cppQueue m_mdStack{sizeof(Metadata), FILE_STACK_SIZE, FIFO};
+    uint8_t m_count = 0;
 public:
     SaveHandler() = default;
 public:
-    bool add(const Metadata&);
+    bool add(Metadata);
     bool unload();
 };

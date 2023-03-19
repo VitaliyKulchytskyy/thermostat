@@ -24,7 +24,7 @@ public:
     /// Format: int8_t
     temp_t OutsideTemp  = 0;
 public:
-    TemperatureFormat();
+    TemperatureFormat() = default;
 
     TemperatureFormat(temp_t inTemperature, temp_t outTemperature)
             : InsideTemp(inTemperature),
@@ -35,6 +35,12 @@ public:
     void toSerial() const override;
 
     size_t formatSize() const override;
+
+    /**
+     * Reads temperature from all modules
+     * @return this ptr
+     */
+    TemperatureFormat& readTemperature();
 
     int calcDelta() const {
         return InsideTemp - OutsideTemp;
