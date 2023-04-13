@@ -1,30 +1,18 @@
 #include "ThreadHandler.h"
 
 void ThreadHandler::begin() {
-    //DateFormat::updateClock(19, 3, 23, 23, 12, 20);
-    m_thermoregulation.setInterval(THREAD_THERMOSTAT_INTERVAL_MS);
-    m_thermoregulation.onRun(Callback::thermostat);
-    m_threads.add(&m_thermoregulation);
-
-    m_dataCollector.setInterval(THREAD_DATA_COLLECTOR_INTERVAL_MS);
-    m_dataCollector.onRun(Callback::dataCollector);
-    m_threads.add(&m_dataCollector);
-}
-
-void ThreadHandler::run() {
-    m_threads.run();
-}
-
-void Callback::dataCollector() {
-    DateFormat d = DateFormat().readTime();
-    Metadata metadata = Metadata(d, temperature, m_log);
-    metadata.toSerial();
-    Serial.println("==========");
-    saveHnd.add(metadata);
-    saveHnd.unload();
+    Timer1.initialize(100000);
+    Timer1.attachInterrupt(Callback::thermostat);
 }
 
 void Callback::thermostat() {
-    temperature = TemperatureFormat().readTemperature();
+    temperature = temperature_t::readModuleInstance();
     Serial.println("-> read temperature modules");
+}
+
+void ThreadHandler::testSaveSd() {
+    date_t date = date_t::readModuleInstance();
+    metadata_t mdt{date, temperature_t::readModuleInstance(), 0x00};
+    saveHnd.add(mdt);
+    saveHnd.unload();
 }

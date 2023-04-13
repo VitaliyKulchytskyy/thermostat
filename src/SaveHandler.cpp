@@ -1,21 +1,32 @@
 #include "SaveHandler.h"
 
+File SaveHandler::writeBin;
 
-bool SaveHandler::add(Metadata md) {
+
+bool SaveHandler::add(metadata_t mdt) {
     m_count++;
-    bool status = m_mdStack.push(&md);
-    return status;
+    return m_mdStack.push(&mdt);
 }
 
 bool SaveHandler::unload() {
-    if(!SD.begin(SD_CHIP_SELECT) || !m_mdStack.isEmpty())
+    if(!SD.begin(SD_CHIP_SELECT) || m_mdStack.isEmpty())
         return false;
 
     do {
-        Metadata* md;
-        m_mdStack.pop(md);
-        md->toSerial();
-    } while(--m_count > 0);
+        metadata_t mdt{};
+        m_mdStack.pop(&mdt);
+
+        writeBin = SD.open(mdt.getFilename(), FILE_WRITE);
+        if(!writeBin)
+            return false;
+
+        auto *bytes = new uint8_t[m_mdtSize]{};
+        memcpy(bytes, &mdt, m_mdtSize);
+        writeBin.write(bytes, m_mdtSize);
+        delete[] bytes;
+
+        writeBin.close();
+    } while (--m_count > 0);
 
     return true;
 }

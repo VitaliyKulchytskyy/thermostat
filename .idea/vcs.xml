@@ -6,7 +6,7 @@
     <mapping directory="$PROJECT_DIR$/lib/ArduinoThread" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/lib/Queue" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/lib/SD" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/lib/SdFat" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/lib/TimerOne" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/lib/iarduino_RTC" vcs="Git" />
   </component>
 </project>

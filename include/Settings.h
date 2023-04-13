@@ -8,9 +8,9 @@
 
 /* Threads */
 /// Interval of calling the thermostat procedure
-#define THREAD_THERMOSTAT_INTERVAL_MS         100
+#define THREAD_THERMOSTAT_INTERVAL_MS         500
 /// Interval of calling the data collector procedure
-#define THREAD_DATA_COLLECTOR_INTERVAL_MS     2000
+#define THREAD_DATA_COLLECTOR_INTERVAL_MS     2500
 
 /* SD card */
 /// Pin of chip select
