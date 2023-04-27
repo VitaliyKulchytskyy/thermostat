@@ -1,187 +1,65 @@
-// 3: 28 3A 2B DB 58 20 1 E0 (з гільзою)
-// 2: 28 91 FF F9 D  0  0 A3
 #include <Arduino.h>
-#include <OneWire.h>
-OneWire ds(2); // на пине 10 (нужен резистор 4.7 КОм)
+#include <microDS18B20.h>
 
-// пример использования библиотеки OneWire DS18S20, DS18B20, DS1822
-
-void setup(void) {
-
+// Уникальные адреса датчиков - считать можно в примере address_read
+uint8_t s1_addr[] = {0x28, 0x91, 0xFF, 0xF9, 0xD,  0x0,  0x0, 0xA3};
+uint8_t s2_addr[] = {0x28, 0x3A, 0x2B, 0xDB, 0x58, 0x20, 0x1, 0xE0};
+MicroDS18B20<2, s1_addr> sensor1;  // Создаем термометр с адресацией
+MicroDS18B20<3, s2_addr> sensor2;  // Создаем термометр с адресацией
+void setup() {
     Serial.begin(9600);
-
 }
 
-void loop(void) {
+void loop() {
+    // асинхронное чтение нескольких датчиков смотри в примере async_read_many
+    sensor1.requestTemp();      // Запрашиваем преобразование температуры
+    sensor2.requestTemp();
+    delay(1000);           // ожидаем результат
 
-    byte i;
+    Serial.print("t1: ");
+    if (sensor1.readTemp()) Serial.println(sensor1.getTemp());
+    else Serial.println("error");
+    Serial.print("t2: ");
+    if (sensor2.readTemp()) Serial.println(sensor2.getTemp());
+    else Serial.println("error");
+}
 
-    byte present = 0;
+/*
+#define DS_SENSOR_AMOUNT 2
+// создаём двухмерный массив с адресами
+uint8_t addr[][8] = {
+        {0x28, 0x91, 0xFF, 0xF9, 0xD,  0x0,  0x0, 0xA3},
+        {0x28, 0x3A, 0x2B, 0xDB, 0x58, 0x20, 0x1, 0xE0}, // з гільзою
+};
 
-    byte type_s;
+// указываем DS_ADDR_MODE для подключения блока адресации
+// и создаём массив датчиков на пине D2
+MicroDS18B20<2, DS_ADDR_MODE> sensor[DS_SENSOR_AMOUNT];
 
-    byte data[12];
+void setup() {
+    Serial.begin(9600);
+    // устанавливаем адреса
+    for (int i = 0; i < DS_SENSOR_AMOUNT; i++) {
+        sensor[i].setAddress(addr[i]);
+    }
+}
 
-    byte addr[8];
+void loop() {
+    // конструкция программного таймера на 1c
+    static uint32_t tmr;
+    if (millis() - tmr >= 1000) {
+        tmr = millis();
 
-    float celsius, fahrenheit;
-
-    if ( !ds.search(addr)) {
-
-        Serial.println("No more addresses.");
-
+        // выводим показания в порт
+        for (auto & i : sensor) {
+            Serial.print(i.getTemp());
+            Serial.print(',');
+        }
         Serial.println();
 
-        ds.reset_search();
-
-        delay(250);
-
-        return;
-
-    }
-
-    Serial.print("ROM =");
-
-    for( i = 0; i < 8; i++) {
-
-        Serial.write(' ');
-
-        Serial.print(addr[i], HEX);
-
-    }
-
-    if (OneWire::crc8(addr, 7) != addr[7]) {
-
-        Serial.println("CRC is not valid!");
-
-        return;
-
-    }
-
-    Serial.println();
-
-// первый байт определяет чип
-
-    switch (addr[0]) {
-
-        case 0x10:
-
-            Serial.println(" Chip = DS18S20"); // или более старый DS1820
-
-            type_s = 1;
-
-            break;
-
-        case 0x28:
-
-            Serial.println(" Chip = DS18B20");
-
-            type_s = 0;
-
-            break;
-
-        case 0x22:
-
-            Serial.println(" Chip = DS1822");
-
-            type_s = 0;
-
-            break;
-
-        default:
-
-            Serial.println("Device is not a DS18x20 family device.");
-
-            return;
-
-    }
-
-    ds.reset();
-
-    ds.select(addr);
-
-    //ds.write(0x44); // начинаем преобразование, используя ds.write(0x44,1) с "паразитным" питанием
-
-    delay(1000); // 750 может быть достаточно, а может быть и не хватит
-
-// мы могли бы использовать тут ds.depower(), но reset позаботится об этом
-
-    present = ds.reset();
-
-    ds.select(addr);
-
-    ds.write(0xBE);
-
-    Serial.print(" Data = ");
-
-    Serial.print(present, HEX);
-
-    Serial.print(" ");
-
-    for ( i = 0; i < 9; i++) { // нам необходимо 9 байт
-
-        data[i] = ds.read();
-
-        Serial.print(data[i], HEX);
-
-        Serial.print(" ");
-
-    }
-
-    Serial.print(" CRC=");
-
-    Serial.print(OneWire::crc8(data, 8), HEX);
-
-    Serial.println();
-
-// конвертируем данный в фактическую температуру
-
-// так как результат является 16 битным целым, его надо хранить в
-
-// переменной с типом данных "int16_t", которая всегда равна 16 битам,
-
-// даже если мы проводим компиляцию на 32-х битном процессоре
-
-    int16_t raw = (data[1] << 8) | data[0];
-
-    if (type_s) {
-
-        raw = raw << 3; // разрешение 9 бит по умолчанию
-
-        if (data[7] == 0x10) {
-
-            raw = (raw & 0xFFF0) + 12 - data[6];
-
+        // запрашиваем новые
+        for (auto & i : sensor) {
+            i.requestTemp();
         }
-
-    } else {
-
-        byte cfg = (data[4] & 0x60);
-
-// при маленьких значениях, малые биты не определены, давайте их обнулим
-
-        if (cfg == 0x00) raw = raw & ~7; // разрешение 9 бит, 93.75 мс
-
-        else if (cfg == 0x20) raw = raw & ~3; // разрешение 10 бит, 187.5 мс
-
-        else if (cfg == 0x40) raw = raw & ~1; // разрешение 11 бит, 375 мс
-
-//// разрешение по умолчанию равно 12 бит, время преобразования - 750 мс
-
     }
-
-    celsius = (float)raw / 16.0;
-
-    fahrenheit = celsius * 1.8 + 32.0;
-
-    Serial.print(" Temperature = ");
-
-    Serial.print(celsius);
-
-    Serial.print(" Celsius, ");
-
-    Serial.print(fahrenheit);
-
-    Serial.println(" Fahrenheit");
-
-}
+}*/
