@@ -1,3 +1,4 @@
+/*
 #pragma once
 #include "Arduino.h"
 #include "Settings.h"
@@ -17,4 +18,4 @@ public:
 public:
     bool add(metadata_t);
     bool unload();
-};
+};*/

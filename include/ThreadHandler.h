@@ -1,4 +1,5 @@
 #pragma once
+/*
 #include "Settings.h"
 #include "Metadata.h"
 #include "SaveHandler.h"
@@ -18,4 +19,4 @@ namespace ThreadHandler {
     void begin();
     void run();
     void testSaveSd();
-}
+}*/

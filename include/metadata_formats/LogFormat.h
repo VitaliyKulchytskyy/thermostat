@@ -1,5 +1,5 @@
 #pragma once
-#include "Arduino.h"
+//#include "Arduino.h"
 
 /// On thermoregulations mode
 #define THERMOREG_ON    0x80

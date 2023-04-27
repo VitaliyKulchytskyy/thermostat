@@ -1,4 +1,4 @@
-#include "SaveHandler.h"
+/*#include "SaveHandler.h"
 
 File SaveHandler::writeBin;
 
@@ -30,5 +30,5 @@ bool SaveHandler::unload() {
     Serial.println("-> data was saved");
 
     return true;
-}
+}*/
 

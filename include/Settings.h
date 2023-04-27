@@ -17,3 +17,7 @@
 #define SD_CHIP_SELECT          4
 /// The value of how many files can be stored without an SD card
 #define FILE_STACK_SIZE         21
+
+/* Temperature module (DS18B20) */
+#define ONE_WIRE_BUS            2
+#define TICK_PERIOD_MS          1000

@@ -1,13 +1,13 @@
 #include "Arduino.h"
 #include "metadata_formats/TemperatureFormat.h"
 
-temperature_t temp;
+/*
+ * TODO: Add tick service
+ * TODO: Implement serialization on SD
+ * TODO: Implement thermoregulation
+ */
 
-void setup(void)
-{
-    // start serial port
-    Serial.begin(9600);
-}
+temperature_t temp;
 
 void printRawData(FormatBase& format) {
     uint8_t *rawFormat = format.serialize();
@@ -21,6 +21,12 @@ void printRawData(FormatBase& format) {
 
     Serial.println();
     delete[] rawFormat;
+}
+
+void setup(void)
+{
+    // start serial port
+    Serial.begin(9600);
 }
 
 void loop(void)

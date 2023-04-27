@@ -1,4 +1,4 @@
-#include "ThreadHandler.h"
+/*#include "ThreadHandler.h"
 
 void ThreadHandler::begin() {
     Timer1.initialize(100000);
@@ -9,7 +9,7 @@ void ThreadHandler::begin() {
 void Callback::thermostat() {
     temperature = temperature_t::readModuleInstance();
     Serial.println("-> read temperature modules");
-}
+}*/
 /*
 void ThreadHandler::testSaveSd() {
     date_t date = date_t::readModuleInstance();

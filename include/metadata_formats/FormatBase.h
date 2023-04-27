@@ -1,6 +1,5 @@
 #pragma once
 
-#include "DateFormat.h"
 
 class FormatBase {
 public:
