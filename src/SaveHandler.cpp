@@ -27,6 +27,7 @@ bool SaveHandler::unload() {
 
         writeBin.close();
     } while (--m_count > 0);
+    Serial.println("-> data was saved");
 
     return true;
 }
