@@ -1,5 +1,7 @@
 #pragma once
 
+#define DEBUG
+
 /* Pins */
 /// Analog pin of the outside thermometer module
 #define OUTSIDE_THERMOMETER_PIN     A0
@@ -16,7 +18,7 @@
 /// Pin of chip select
 #define SD_CHIP_SELECT          4
 /// The value of how many files can be stored without an SD card
-#define FILE_STACK_SIZE         21
+#define FILE_STACK_SIZE         4 // 21
 
 /* Temperature module (DS18B20) */
 #define ONE_WIRE_BUS            2

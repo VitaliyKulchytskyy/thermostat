@@ -1,7 +1,7 @@
 /*#include "Arduino.h"
 #include "metadata_formats/DateFormat.h"
 
-iarduino_RTC date_t::_clock = RTC_DS3231;
+iarduino_RTC date_t::m_watch = RTC_DS3231;
 
 size_t date_t::size() const {
     return 6;

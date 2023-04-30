@@ -1,6 +1,5 @@
 #pragma once
 #include "Settings.h"
-#include "FormatBase.h"
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
@@ -8,7 +7,7 @@
 /**
  * The structure of temperature parameters used in the .bin file format
  */
-struct temperature_t: public FormatBase{
+struct temperature_t: public FormatBase {
 private:
     static OneWire oneWire;
     static DallasTemperature sensors;
@@ -18,29 +17,31 @@ private:
     float insideTemperatureC  = 0;
     float outsideTemperatureC = 0;
 private:
-    bool setTemperature(DeviceAddress& deviceAddr, float& outTempC) {
+    bool static setTemperature(const DeviceAddress& deviceAddr, float& outTempC) {
         float tempC = sensors.getTempC(deviceAddr);
+
         if (tempC == DEVICE_DISCONNECTED_C)
             return true;
+
         outTempC = tempC;
         return false;
     }
 public:
-    temperature_t() {
+    temperature_t() = default;
+public:
+    void begin() override {
         sensors.begin();
     }
 
-    uint8_t tick() {
-        auto timer = millis();
-
+    log_t request() override {
         sensors.requestTemperatures();
         bool setInsideTemp = setTemperature(inside, insideTemperatureC);
         bool setOutsideTemp = setTemperature(outside, outsideTemperatureC);
 
         uint8_t errorCode = 0;
-        errorCode |= (setInsideTemp << 0) | (setOutsideTemp << 1);
+        errorCode |= (setInsideTemp << BAD_REQUEST_THERMOMETER_INSIDE)
+                  | (setOutsideTemp << BAD_REQUEST_THERMOMETER_OUTSIDE);
 
-        delay(TICK_PERIOD_MS - (millis() - timer));
         return errorCode;
     }
 
