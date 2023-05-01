@@ -13,12 +13,12 @@ private:
     static DallasTemperature sensors;
     static DeviceAddress inside;
     static DeviceAddress outside;
-private:
+public:
     float insideTemperatureC  = 0;
     float outsideTemperatureC = 0;
 private:
-    bool static setTemperature(const DeviceAddress& deviceAddr, float& outTempC) {
-        float tempC = sensors.getTempC(deviceAddr);
+    bool static setTemperature(const DeviceAddress& deviceIndex, float& outTempC) {
+        float tempC = sensors.getTempC(deviceIndex);
 
         if (tempC == DEVICE_DISCONNECTED_C)
             return true;
@@ -56,7 +56,7 @@ public:
     bool isParasitePower() const {
         return sensors.isParasitePowerMode();
     }
-public:
+
     size_t size() const override {
         return sizeof(insideTemperatureC) + sizeof(outsideTemperatureC);
     }
