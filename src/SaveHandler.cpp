@@ -8,7 +8,7 @@ bool SaveHandler::add(metadata_t mdt) {
     return m_mdStack.push(&mdt);
 }
 
-bool SaveHandler::unload() {
+bool SaveHandler::upload() {
     if(!SD.begin(SD_CHIP_SELECT) || m_mdStack.isEmpty())
         return false;
 

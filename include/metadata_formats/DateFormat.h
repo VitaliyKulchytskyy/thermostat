@@ -21,7 +21,7 @@ public:
         m_watch.begin();
     }
 
-    uint8_t request() override {
+    log_t request() override {
         m_watch.gettime();
         m_hours = m_watch.Hours;
         m_minutes = m_watch.minutes;
@@ -31,6 +31,8 @@ public:
         m_year = m_watch.year;
         return 0;
     }
+
+    void afterRequest() override {}
 
     void toSerial() const override {
         Serial.print(m_hours);
@@ -67,6 +69,11 @@ public:
 
         return filename;
     }
+
+    bool operator==(const date_t &other) const;
+
+    bool operator!=(const date_t &other) const;
+
 public:
     size_t size() const override {
         return sizeof(uint8_t) * 6;
@@ -86,3 +93,16 @@ public:
 };
 
 iarduino_RTC date_t::m_watch = RTC_DS3231;
+
+bool date_t::operator==(const date_t &other) const {
+    return m_hours == other.m_hours &&
+           m_minutes == other.m_minutes &&
+           m_seconds == other.m_seconds &&
+           m_day == other.m_day &&
+           m_month == other.m_month &&
+           m_year == other.m_year;
+}
+
+bool date_t::operator!=(const date_t &other) const {
+    return !(other == *this);
+}

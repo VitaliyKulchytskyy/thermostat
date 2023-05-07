@@ -4,6 +4,8 @@
 #include "metadata_formats/DateFormat.h"
 #include "metadata_formats/LightSensorFormat.h"
 #include "metadata_formats/TemperatureFormat.h"
+#include "metadata_formats/ThreadSyncFormat.h"
+#include "metadata_formats/ThermoregFormat.h"
 
 template<size_t N>
 struct metadata_t: public FormatBase {
@@ -45,8 +47,11 @@ public:
         size_t shift = 0;
 
         for(const auto& pFormat: m_formats) {
-            auto pFormatRaw = pFormat->serialize();
             const uint8_t formatSize = pFormat->size();
+            if(formatSize == 0)
+                continue;
+
+            auto pFormatRaw = pFormat->serialize();
             memcpy(&output[shift], pFormatRaw, formatSize);
             shift += formatSize;
             delete[] pFormatRaw;
@@ -57,9 +62,13 @@ public:
     }
 
     void toSerial() const override {
-        Log::printLogInfo(requestLog);
+        this->printLog();
         for(const auto& format: m_formats)
             format->toSerial();
+    }
+
+    void printLog() const {
+        Log::printLogInfo(requestLog, HEX);
     }
 
     log_t request() override {
@@ -70,4 +79,6 @@ public:
 
         return requestLog;
     }
+
+    void afterRequest() override {}
 };

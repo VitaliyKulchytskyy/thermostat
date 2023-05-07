@@ -28,14 +28,12 @@ public:
         if(m_count < FILE_STACK_SIZE)
             m_count++;
 
-        auto temp = new uint8_t[m_rawArraySize];
-        memcpy(temp, p_raw, m_rawArraySize);
-        m_mdStack.push(&temp);
+        m_mdStack.push(p_raw);
 
         return m_mdStack.isFull();
     }
 
-    bool unload(const char* filename) {
+    bool upload(const char* filename) {
         if(!SD.begin(SD_CHIP_SELECT) || m_mdStack.isEmpty())
             return false;
 

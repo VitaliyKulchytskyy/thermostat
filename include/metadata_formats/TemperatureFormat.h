@@ -45,6 +45,8 @@ public:
         return errorCode;
     }
 
+    void afterRequest() override {}
+
     void toSerial() const override {
         Serial.print("inside (+): ");
         Serial.print(insideTemperatureC);

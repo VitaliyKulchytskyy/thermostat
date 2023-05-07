@@ -15,5 +15,5 @@ void ThreadHandler::testSaveSd() {
     date_t date = date_t::readModuleInstance();
     metadata_t mdt{date, temperature_t::readModuleInstance(), 0x00};
     saveHnd.add(mdt);
-    saveHnd.unload();
+    saveHnd.upload();
 }*/

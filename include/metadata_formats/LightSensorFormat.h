@@ -24,8 +24,10 @@ public:
         Serial.println(" lux");
     }
 
-    uint8_t request() override {
+    log_t request() override {
         m_lux = analogRead(A0);
         return 0;
     }
+
+    void afterRequest() override {}
 };
