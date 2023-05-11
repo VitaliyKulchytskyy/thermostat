@@ -10,7 +10,5 @@ public:
 
     virtual log_t request() = 0;
 
-    virtual void afterRequest() = 0;
-
     virtual void begin() = 0;
 };

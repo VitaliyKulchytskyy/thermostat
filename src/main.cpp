@@ -22,7 +22,9 @@
  * TODO: Define DEBUG
  *      TODO: Cover over DEBUG flag all toSerial() methods (also in the interface definition)
  *      TODO: Cover over DEBUG flag all Serial outputs
- * TODO: Rewrite size() in Metadata.h
+ * TODO: Rewrite size() in Metadata.h and in Metadata.serialize()
+ * TODO: Find out where defines should be placed
+ * TODO: заміряти коли певні ділянки коду працюють швидке чи повільніше
  */
 
 date_t g_date;
@@ -38,29 +40,16 @@ SaveHandler saver(metadata.size());
 
 ThreadController m_threads = ThreadController();
 
-/*void printRawData(const FormatBase& format, uint8_t outputSys = HEX) {
-    uint8_t *rawFormat = format.serialize();
-    const uint8_t formatSize = format.size();
-
-    Serial.print("Raw format: ");
-    for(uint8_t i = 0; i < formatSize; i++) {
-        Serial.print(rawFormat[i], outputSys);
-        Serial.print(" ");
-    }
-
-    Serial.println();
-    delete[] rawFormat;
-}*/
-
-
+bool isPrevImageSaved = false;
 void saveMetadataImage() {
     static bool isStackOverflow = false;
 
-    metadata.requestLog |= ((isStackOverflow) << ERROR_FILE_STACK_OVERFLOW);
-    metadata.toSerial();
-    Serial.println();
+    metadata.requestLog |= ((isStackOverflow & !isPrevImageSaved) << ERROR_FILE_STACK_OVERFLOW);
 
     auto temp = metadata.serialize();
+    metadata.toSerial();
+    //Serial.println("Original raw:");
+    //printRawData(temp, metadata.size());
     isStackOverflow = saver.add(temp);
     delete[] temp;
 }
@@ -70,7 +59,8 @@ void saveMetadataOnSD() {
       || 1 & (metadata.requestLog >> INFO_THERMOREGULATION_END)))
         saveMetadataImage();
 
-    saver.upload(g_date.getFilename());
+    isPrevImageSaved = saver.upload(g_date.getFilename());
+    Serial.println();
 }
 
 void requestAllModules() {

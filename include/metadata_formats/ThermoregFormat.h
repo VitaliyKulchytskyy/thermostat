@@ -8,7 +8,6 @@
 
 struct thermoreg_f: public FormatBase {
 private:
-    bool prevState = false;
     const temperature_t& m_temp;
 public:
     explicit thermoreg_f(const temperature_t &mTemp) : m_temp(mTemp) {}
@@ -26,37 +25,35 @@ public:
     }
 
     log_t request() override {
-        return thermoregulation(m_temp.outsideTemperatureC);
-    }
-
-    void afterRequest() override {
-
+        const float tempC = m_temp.insideTemperatureC;
+        return thermoregulation(tempC);
     }
 
     void begin() override {
-        relayGet(m_temp.outsideTemperatureC);
+        relayGet(m_temp.insideTemperatureC);
     }
 private:
-    log_t thermoregulation(int8_t tempC) {
+    static log_t thermoregulation(int8_t tempC) {
         const bool state = relayGet(tempC);
-        log_t outputCode = 0;
         pinMode(RELAY_PIN, state);
 
-        if (prevState && state) {
-            outputCode = 1 << INFO_THERMOREGULATION_PROCESS;
-            prevState = state;
-            return outputCode;
-        }
-        else if(!prevState && !state){
-            outputCode = 0;
-            prevState = state;
-            return outputCode;
-        }
-        else if(!prevState &&  state) outputCode = 1 << INFO_THERMOREGULATION_START;
-        else if( prevState && !state) outputCode = 1 << INFO_THERMOREGULATION_END;
+        static bool prevState = false;
 
-        prevState = state;
-        return outputCode;
+        if (prevState && state)
+            return setState(1 << INFO_THERMOREGULATION_PROCESS, prevState, state);
+        else if(!prevState && !state)
+            return setState(0, prevState, state);
+        else if(!prevState &&  state)
+            return setState(1 << INFO_THERMOREGULATION_START, prevState, state);
+        else if( prevState && !state)
+            return setState(1 << INFO_THERMOREGULATION_END, prevState, state);
+
+        return 0;
+    }
+
+    static log_t setState(log_t errorCode, bool &outState, bool getState) {
+        outState = getState;
+        return errorCode;
     }
 
     static bool relayGet(float input, float k = THERMOSTAT_INERTIA) {

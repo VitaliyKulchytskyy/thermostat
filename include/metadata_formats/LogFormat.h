@@ -23,22 +23,5 @@ namespace Log {
     void printLogInfo(log_t log, uint8_t outputSys = BIN) {
         Serial.print("Error code: ");
         Serial.println(log, outputSys);
-/*        Serial.println();
-        Serial.print("Bad requests to INSIDE thermometer:\t\t");
-        Serial.println(isBitSet(log, BAD_REQUEST_THERMOMETER_INSIDE));
-        Serial.print("Bad requests to OUTSIDE thermometer:\t\t");
-        Serial.println(isBitSet(log, BAD_REQUEST_THERMOMETER_INSIDE));
-        Serial.print("RTC wasn't set up:\t\t\t\t");
-        Serial.println(isBitSet(log, ERROR_RTC_SET_UP));
-        Serial.print("There is no uninterrupted power supply:\t\t");
-        Serial.println(isBitSet(log, WARNING_RTC_UNIRQ_POWER));
-        Serial.print("The data was written from the stack:\t\t");
-        Serial.println(isBitSet(log, ERROR_FILE_STACK_OVERFLOW));
-        Serial.print("The thermoregulation process is running:\t");
-        Serial.println(isBitSet(log, INFO_THERMOREGULATION_PROCESS));
-        Serial.print("The thermoregulation process was started:\t");
-        Serial.println(isBitSet(log, INFO_THERMOREGULATION_START));
-        Serial.print("The thermoregulation process was finish:\t");
-        Serial.println(isBitSet(log, INFO_THERMOREGULATION_END));*/
     }
 }

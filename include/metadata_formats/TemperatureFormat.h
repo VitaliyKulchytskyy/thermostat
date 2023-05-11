@@ -3,6 +3,7 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
+#define TEMPERATURE_PRECISION 9
 
 /**
  * The structure of temperature parameters used in the .bin file format
@@ -31,6 +32,8 @@ public:
 public:
     void begin() override {
         sensors.begin();
+        sensors.setResolution(inside, TEMPERATURE_PRECISION, true);
+        sensors.setResolution(outside, 12, true);
     }
 
     log_t request() override {
@@ -40,17 +43,15 @@ public:
 
         uint8_t errorCode = 0;
         errorCode |= (setInsideTemp << BAD_REQUEST_THERMOMETER_INSIDE)
-                  | (setOutsideTemp << BAD_REQUEST_THERMOMETER_OUTSIDE);
+                  |  (setOutsideTemp << BAD_REQUEST_THERMOMETER_OUTSIDE);
 
         return errorCode;
     }
 
-    void afterRequest() override {}
-
     void toSerial() const override {
-        Serial.print("inside (+): ");
+        Serial.print("inside: ");
         Serial.print(insideTemperatureC);
-        Serial.print("C | outside: ");
+        Serial.print("C | outside (+): ");
         Serial.print(outsideTemperatureC);
         Serial.println("C");
     }
@@ -73,5 +74,5 @@ public:
 
 OneWire temperature_t::oneWire = ONE_WIRE_BUS;
 DallasTemperature temperature_t::sensors = &oneWire;
-DeviceAddress temperature_t::inside  = {0x28, 0x91, 0xFF, 0xF9, 0xD,  0x0,  0x0, 0xA3};
-DeviceAddress temperature_t::outside = {0x28, 0x3A, 0x2B, 0xDB, 0x58, 0x20, 0x1, 0xE0};
+DeviceAddress temperature_t::inside  = {0x28, 0x3A, 0x2B, 0xDB, 0x58, 0x20, 0x1, 0xE0};
+DeviceAddress temperature_t::outside = {0x28, 0x91, 0xFF, 0xF9, 0xD,  0x0,  0x0, 0xA3};

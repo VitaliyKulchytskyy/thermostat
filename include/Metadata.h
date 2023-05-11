@@ -4,7 +4,6 @@
 #include "metadata_formats/DateFormat.h"
 #include "metadata_formats/LightSensorFormat.h"
 #include "metadata_formats/TemperatureFormat.h"
-#include "metadata_formats/ThreadSyncFormat.h"
 #include "metadata_formats/ThermoregFormat.h"
 
 template<size_t N>
@@ -79,6 +78,4 @@ public:
 
         return requestLog;
     }
-
-    void afterRequest() override {}
 };

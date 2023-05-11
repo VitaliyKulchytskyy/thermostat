@@ -28,6 +28,4 @@ public:
         m_lux = analogRead(A0);
         return 0;
     }
-
-    void afterRequest() override {}
 };
