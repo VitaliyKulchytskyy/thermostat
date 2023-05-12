@@ -14,7 +14,7 @@
  * TODO: Implement Metadata.h [+]
  *      TODO: Implement serialization on SD [+]
  * TODO: Implement logs [+]
- *      TODO: Implement all error codes
+ *      TODO: Implement all error codes [+]
  * TODO: Implement watch backup
  * TODO: Implement pseudo-threads [+]
  * TODO: Implement thermoregulation [+]
@@ -43,13 +43,10 @@ ThreadController m_threads = ThreadController();
 bool isPrevImageSaved = false;
 void saveMetadataImage() {
     static bool isStackOverflow = false;
-
     metadata.requestLog |= ((isStackOverflow & !isPrevImageSaved) << ERROR_FILE_STACK_OVERFLOW);
 
     auto temp = metadata.serialize();
     metadata.toSerial();
-    //Serial.println("Original raw:");
-    //printRawData(temp, metadata.size());
     isStackOverflow = saver.add(temp);
     delete[] temp;
 }
@@ -71,9 +68,46 @@ void requestAllModules() {
         saveMetadataImage();
 }
 
+/*
+ * # Файл для задання дати на RTC модулі.
+ * #
+ * # Змінюйте значення змінних відповідно до параметра:
+ * # Назва_параметру=цілочисельне_значення
+ * #
+ * # Для того, щоб прицільно змінити певний параметр
+ * # закоментуйте ті параметри, які не потребують зміни.
+ * # Для того, щоб закоментувати рядок використовуйте символ - #.
+ * #
+ * # Задання години (від 0 до 23):
+ * Hours=12
+ * # Задання хвилини (від 0 до 59):
+ * Minutes=30
+ * # Задання секунд (від 0 до 59):
+ * Seconds=0
+ * # Задання дня (від 1 до 31):
+ * Day=15
+ * # Задання місяця (від 1 до 12):
+ * Month=5
+ * # Задання року (від 23 до 99):
+ * Year=23
+ */
+uint8_t* getParsedRTCFile(const char* filename) {
+    if(!SD.begin(SD_CHIP_SELECT))
+        return nullptr;
+
+    File readFile = SD.open(filename, FILE_READ);
+    if(!readFile)
+        return nullptr;
+
+    while(readFile.available()) {
+
+    }
+}
+
 void setup() {
     Serial.begin(9600);
     metadata.begin();
+    //date_t::setTime();
 
     Thread m_thermoregulation = Thread();
     m_thermoregulation.setInterval(THREAD_THERMOSTAT_MS);

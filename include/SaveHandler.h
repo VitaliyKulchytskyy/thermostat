@@ -47,7 +47,7 @@ public:
             auto temp = new uint8_t [m_rawArraySize];
             m_mdStack->pop(temp);
 
-            Serial.println("-> saved");
+            //Serial.println("-> saved");
             //printRawData(temp, m_rawArraySize);
             writeBin.write(temp, m_rawArraySize);
             writeBin.close();

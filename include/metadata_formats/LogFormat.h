@@ -6,7 +6,7 @@
 #define BAD_REQUEST_THERMOMETER_OUTSIDE     1
 /// Flag of incorrect RTC set up
 #define ERROR_RTC_SET_UP                    2
-/// Flag of absence uninterrupted RTC supplying
+/// Flag of absence uninterrupted RTC supplying. Deprecated
 #define WARNING_RTC_UNIRQ_POWER             3
 /// Flag of stack overflow. Losing the data
 #define ERROR_FILE_STACK_OVERFLOW           4

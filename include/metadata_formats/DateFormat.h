@@ -29,7 +29,8 @@ public:
         m_day = m_watch.day;
         m_month = m_watch.month;
         m_year = m_watch.year;
-        return 0;
+        log_t errorCode = (this->isTimeReset() << ERROR_RTC_SET_UP);
+        return errorCode;
     }
 
     void toSerial() const override {
@@ -50,7 +51,7 @@ public:
 
     static void setTime() {
         // format: seconds (0-59), minutes (0-59), hours(0-23), day (1-31), month(1-12), year (0-99), name of day (1-7)
-        m_watch.settime(51, 3, 21, 28, 4, 23, 5);
+        m_watch.settime(10, 7, 13, 12, 5, 23, 5);
     }
 
     const char* getFilename() const {
@@ -67,7 +68,6 @@ public:
 
         return filename;
     }
-
 public:
     size_t size() const override {
         return sizeof(uint8_t) * 6;
@@ -83,6 +83,10 @@ public:
                                                 m_year};
 
         return date;
+    }
+private:
+    bool isTimeReset() const {
+        return m_year < 23;
     }
 };
 
