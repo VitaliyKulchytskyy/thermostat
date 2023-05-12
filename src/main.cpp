@@ -91,6 +91,45 @@ void requestAllModules() {
  * # Задання року (від 23 до 99):
  * Year=23
  */
+bool readRTCSetupFile() {
+    if(!SD.begin(SD_CHIP_SELECT))
+        return false;
+
+    File readFile = SD.open("config.bin", FILE_READ);
+    if(!readFile)
+        return false;
+
+    const size_t dateSize = g_date.size();
+    auto buf = new uint8_t[dateSize];
+    readFile.readBytes(buf, dateSize);
+    readFile.close();
+
+    auto bufDate = g_date.serialize();
+
+    for(size_t i = 0; i < dateSize; i++)
+        buf[i] = (buf[i] == 0xFF) ? bufDate[i] : buf[i];
+
+    date_t::setTime(buf);
+
+    delete[] bufDate;
+    delete[] buf;
+
+    return true;
+}
+
+bool createTestFile() {
+    if(!SD.begin(SD_CHIP_SELECT))
+        return false;
+
+    File writeFile = SD.open("config.bin", FILE_WRITE);
+    if(!writeFile)
+        return false;
+
+    auto testRaw = new uint8_t[6]{22, 12, 30, 12, 5, 23};
+    writeFile.write(testRaw, 6);
+    writeFile.close();
+}
+
 uint8_t* getParsedRTCFile(const char* filename) {
     if(!SD.begin(SD_CHIP_SELECT))
         return nullptr;
@@ -107,9 +146,17 @@ uint8_t* getParsedRTCFile(const char* filename) {
 void setup() {
     Serial.begin(9600);
     metadata.begin();
+    log_t errorCode = metadata.request();
+
+    if(1 & (errorCode >> ERROR_RTC_SET_UP)) {
+        readRTCSetupFile();
+    }
+
+    metadata.request();
+    metadata.toSerial();
     //date_t::setTime();
 
-    Thread m_thermoregulation = Thread();
+/*    Thread m_thermoregulation = Thread();
     m_thermoregulation.setInterval(THREAD_THERMOSTAT_MS);
     m_thermoregulation.onRun(requestAllModules);
     m_threads.add(&m_thermoregulation);
@@ -117,7 +164,7 @@ void setup() {
     Thread m_dataCollector = Thread();
     m_dataCollector.setInterval(3000);
     m_dataCollector.onRun(saveMetadataOnSD);
-    m_threads.add(&m_dataCollector);
+    m_threads.add(&m_dataCollector);*/
 }
 
 void loop() {

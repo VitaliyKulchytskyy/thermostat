@@ -4,6 +4,7 @@
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/lib" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/lib/Arduino-Temperature-Control-Library" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/lib/ArduinoJson" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/lib/ArduinoThread" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/lib/Queue" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/lib/SD" vcs="Git" />

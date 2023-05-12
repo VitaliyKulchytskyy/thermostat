@@ -1,6 +1,14 @@
 #pragma once
 #include "iarduino_RTC.h"
 
+#define READ_HOURS      0
+#define READ_MINUTES    1
+#define READ_SECONDS    2
+#define READ_DAY        3
+#define READ_MONTH      4
+#define READ_YEAR       5
+#define NUM_OF_DAY      5 // Friday
+
 /**
  * The structure of date parameters used in the .bin file format
  */
@@ -51,7 +59,16 @@ public:
 
     static void setTime() {
         // format: seconds (0-59), minutes (0-59), hours(0-23), day (1-31), month(1-12), year (0-99), name of day (1-7)
-        m_watch.settime(10, 7, 13, 12, 5, 23, 5);
+        m_watch.settime(10, 7, 13, 12, 5, 23, NUM_OF_DAY);
+    }
+
+    static void setTime(uint8_t* const aDate) {
+        m_watch.settime(aDate[READ_SECONDS],
+                        aDate[READ_MINUTES],
+                        aDate[READ_HOURS],
+                        aDate[READ_DAY],
+                        aDate[READ_MONTH],
+                        aDate[READ_YEAR], NUM_OF_DAY);
     }
 
     const char* getFilename() const {
