@@ -1,78 +1,56 @@
 #pragma once
-#include "Settings.h"
 #include <OneWire.h>
 #include <DallasTemperature.h>
+#include "metadata_formats/LogFormat.h"
+#include "metadata_formats/FormatBase.h"
 
-#define TEMPERATURE_PRECISION 9
 
 /**
- * The structure of temperature parameters used in the .bin file format
+ * The structure handles temperature modules (DS18B20 & NTC_10K)
  */
 struct temperature_t: public FormatBase {
 private:
+    /**
+     * Sets temperature by reading the DS18B20 modules
+     * @param [in] deviceIndex index of the module
+     * @param [out] outTempC set to the parameter
+     * @retval true if the deviceIndex can be read
+     * @retval false if the deviceIndex cannot be read
+     */
+    bool static setTemperature(const DeviceAddress& deviceIndex, float& outTempC);
+
+public:
+    temperature_t() = default;
+
+public:
+    void begin() override;
+
+    size_t size() const override;
+
+    uint8_t *serialize() const override;
+
+    log_t request() override;
+
+#ifdef DEBUG_MODE
+    void toSerial() const override;
+#endif
+
+    /**
+     * Reads whether the DS18B20 modules supplied by parasite power
+     * @retval true the DS18B20 modules supplied by parasite power
+     * @retval false the DS18B20 modules don't supply by parasite power
+     */
+    bool isParasitePower() const;
+
+private:
     static OneWire oneWire;
     static DallasTemperature sensors;
+    /// The temperature module used to record temperature of the main device
     static DeviceAddress inside;
+    /// The temperature module used to record outside temperature
     static DeviceAddress outside;
+
 public:
     float insideTemperatureC  = 0;
     float outsideTemperatureC = 0;
-private:
-    bool static setTemperature(const DeviceAddress& deviceIndex, float& outTempC) {
-        float tempC = sensors.getTempC(deviceIndex);
-
-        if (tempC == DEVICE_DISCONNECTED_C)
-            return true;
-
-        outTempC = tempC;
-        return false;
-    }
-public:
-    temperature_t() = default;
-public:
-    void begin() override {
-        sensors.begin();
-        sensors.setResolution(inside, TEMPERATURE_PRECISION, true);
-        sensors.setResolution(outside, 12, true);
-    }
-
-    log_t request() override {
-        sensors.requestTemperatures();
-        bool setInsideTemp = setTemperature(inside, insideTemperatureC);
-        bool setOutsideTemp = setTemperature(outside, outsideTemperatureC);
-
-        uint8_t errorCode = 0;
-        errorCode |= (setInsideTemp << BAD_REQUEST_THERMOMETER_INSIDE)
-                  |  (setOutsideTemp << BAD_REQUEST_THERMOMETER_OUTSIDE);
-
-        return errorCode;
-    }
-
-    void toSerial() const override {
-        Serial.print("inside: ");
-        Serial.print(insideTemperatureC);
-        Serial.print("C | outside (+): ");
-        Serial.print(outsideTemperatureC);
-        Serial.println("C");
-    }
-
-    bool isParasitePower() const {
-        return sensors.isParasitePowerMode();
-    }
-
-    size_t size() const override {
-        return sizeof(insideTemperatureC) + sizeof(outsideTemperatureC);
-    }
-
-    uint8_t *serialize() const override {
-        auto *output = new uint8_t[this->size()];
-        memcpy(output, &insideTemperatureC, sizeof(insideTemperatureC));
-        memcpy(&output[sizeof(insideTemperatureC)], &outsideTemperatureC, sizeof(outsideTemperatureC));
-        return output;
-    }
 };
-
-OneWire temperature_t::oneWire = ONE_WIRE_BUS;
-DallasTemperature temperature_t::sensors = &oneWire;
-DeviceAddress temperature_t::inside  = {0x28, 0x3A, 0x2B, 0xDB, 0x58, 0x20, 0x1, 0xE0};
-DeviceAddress temperature_t::outside = {0x28, 0x91, 0xFF, 0xF9, 0xD,  0x0,  0x0, 0xA3};

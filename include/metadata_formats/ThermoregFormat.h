@@ -1,77 +1,58 @@
 #pragma once
+#include "metadata_formats/LogFormat.h"
+#include "metadata_formats/FormatBase.h"
+#include "metadata_formats/TemperatureFormat.h"
 
-#define THREAD_THERMOSTAT_MS    900
-#define HYSTERESIS_C            4.0
-#define SET_POINT_C             30
-#define THERMOSTAT_INERTIA      0.5
-#define RELAY_PIN               5
-
+/**
+ * The structure handles the thermoregulation process in the device
+ */
 struct thermoreg_f: public FormatBase {
 private:
-    const temperature_t& m_temp;
+    /**
+     * Handles the thermoregulation process by reading the input temperature.
+     * The thermoregulation process proceeds by enabling or disabling the pump with cooling fluid
+     * @param tempC input temperature
+     * @retval INFO_THERMOREGULATION_START thermoregulation process has been started
+     * @retval INFO_THERMOREGULATION_PROCESS thermoregulation process is running
+     * @retval INFO_THERMOREGULATION_END thermoregulation process has ended
+     */
+    static log_t thermoregulation(float tempC);
+
+    /**
+     * Handles the returning of the thermoregulation method
+     * @param [in] logCode the log code of the thermoregulation process
+     * @param [out] outState sets state before returning
+     * @param [in] getState read and save state before returning
+     * @return the log code
+     */
+    static log_t setState(log_t logCode, bool &outState, bool getState);
+
+    /**
+     * Enable or disable the pump based on inputTempC value and
+     * measurement of temperature rise rate
+     * @param inputTempC input temperature
+     * @param k coefficient of system inertia
+     * @retval true enable the pump
+     * @retval false disable the pump
+     */
+    static bool relayGet(float inputTempC, float k = THERMOSTAT_INERTIA);
+
 public:
     explicit thermoreg_f(const temperature_t &mTemp) : m_temp(mTemp) {}
+
 public:
-    size_t size() const override {
-        return 0;
-    }
+    void begin() override;
 
-    uint8_t *serialize() const override {
-        return nullptr;
-    }
+    size_t size() const override;
 
-    void toSerial() const override {
+    uint8_t *serialize() const override;
 
-    }
+    log_t request() override;
 
-    log_t request() override {
-        const float tempC = m_temp.insideTemperatureC;
-        return thermoregulation(tempC);
-    }
+#ifdef DEBUG_MODE
+    void toSerial() const override {}
+#endif
 
-    void begin() override {
-        relayGet(m_temp.insideTemperatureC);
-    }
 private:
-    static log_t thermoregulation(int8_t tempC) {
-        const bool state = relayGet(tempC);
-        pinMode(RELAY_PIN, state);
-
-        static bool prevState = false;
-
-        if (prevState && state)
-            return setState(1 << INFO_THERMOREGULATION_PROCESS, prevState, state);
-        else if(!prevState && !state)
-            return setState(0, prevState, state);
-        else if(!prevState &&  state)
-            return setState(1 << INFO_THERMOREGULATION_START, prevState, state);
-        else if( prevState && !state)
-            return setState(1 << INFO_THERMOREGULATION_END, prevState, state);
-
-        return 0;
-    }
-
-    static log_t setState(log_t errorCode, bool &outState, bool getState) {
-        outState = getState;
-        return errorCode;
-    }
-
-    static bool relayGet(float input, float k = THERMOSTAT_INERTIA) {
-        static float prevInput = 0.0;
-        static bool relayStat = false;
-        static const float hysteresis = HYSTERESIS_C / 2;
-        float signal;
-
-        if (k > 0) {
-            signal = input + ((input - prevInput) / THREAD_THERMOSTAT_MS) * k;
-            prevInput = input;
-        } else {
-            signal = input;
-        }
-
-        if (signal < (SET_POINT_C - hysteresis)) relayStat = false;
-        else if (signal > (SET_POINT_C + hysteresis)) relayStat = true;
-
-        return relayStat;
-    }
+    const temperature_t& m_temp;
 };

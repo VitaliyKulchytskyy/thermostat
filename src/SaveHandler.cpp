@@ -1,38 +1,39 @@
-//#include "SaveHandler.h"
-/*
-File SaveHandler::writeBin;
+#include "SaveHandler.h"
 
+void printRawData(uint8_t* pRawData, uint8_t formatSize, uint8_t outputSys) {
+    Serial.print("Raw format: ");
+    for(uint8_t i = 0; i < formatSize; i++) {
+        Serial.print(pRawData[i], outputSys);
+        Serial.print(" ");
+    }
 
-bool SaveHandler::add(metadata_t mdt) {
-    m_count++;
-    return m_mdStack.push(&mdt);
+    Serial.println();
 }
 
-bool SaveHandler::upload() {
-    if(!SD.begin(SD_CHIP_SELECT) || m_mdStack.isEmpty())
+
+File SaveHandler::writeBin;
+
+bool SaveHandler::upload(const char *filename) {
+    if(!SD.begin(SD_CHIP_SELECT) || m_mdStack->isEmpty())
         return false;
 
-    do {
-        metadata_t mdt;
-        m_mdStack.pop(&mdt);
-        const uint8_t mdtSize = mdt.size();
-
-        writeBin = SD.open(mdt.getDateFormat().getFilename(), FILE_WRITE);
+    while (!m_mdStack->isEmpty()) {
+        writeBin = SD.open(filename, FILE_WRITE);
         if(!writeBin)
             return false;
 
-        auto bytes = new uint8_t[mdtSize]{};
-        auto mdtRaw = mdt.serialize();
+        auto temp = new uint8_t [m_rawArraySize];
+        m_mdStack->pop(temp);
 
-        memcpy(bytes, mdtRaw, mdtSize);
-        writeBin.write(bytes, mdtSize);
-
-        delete[] mdtRaw;
-        delete[] bytes;
+        writeBin.write(temp, m_rawArraySize);
         writeBin.close();
-    } while (--m_count > 0);
-    //Serial.println("-> data was saved");
+        delete[] temp;
+    }
 
     return true;
-}*/
+}
 
+bool SaveHandler::add(const void *const pRawData) {
+    m_mdStack->push(pRawData);
+    return m_mdStack->isFull();
+}

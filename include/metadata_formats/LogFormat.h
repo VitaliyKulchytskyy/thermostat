@@ -1,4 +1,6 @@
 #pragma once
+#include "Arduino.h"
+#include "Settings.h"
 
 /// Flag of incorrect INSIDE thermometer connection
 #define BAD_REQUEST_THERMOMETER_INSIDE      0
@@ -17,11 +19,16 @@
 /// Flag of ending of the thermoregulation process
 #define INFO_THERMOREGULATION_END           7
 
+/// The alias to represent log code
 using log_t = uint8_t;
 
 namespace Log {
-    void printLogInfo(log_t log, uint8_t outputSys = BIN) {
-        Serial.print("Error code: ");
-        Serial.println(log, outputSys);
-    }
+#ifdef DEBUG_MODE
+    /**
+     * Prints the return log code of the request
+     * @param log log code
+     * @param outputSys the numerical system to display the log
+     */
+    void printLogInfo(log_t log, uint8_t outputSys = BIN);
+#endif
 }

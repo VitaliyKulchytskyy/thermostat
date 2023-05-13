@@ -1,110 +1,80 @@
 #pragma once
 #include "iarduino_RTC.h"
+#include "metadata_formats/LogFormat.h"
+#include "metadata_formats/FormatBase.h"
 
+/// Checks whether the RTC module is reset by comparing the pivot year
+#define CHECKS_BY_THE_YEAR      23
+
+/// The index of the hours parameter. Value: 0 - 23
 #define READ_HOURS      0
+/// The index of the minutes parameter. Value: 0 - 59
 #define READ_MINUTES    1
+/// The index of the seconds parameter. Value: 0 - 59
 #define READ_SECONDS    2
+/// The index of the day parameter. Value: 1 - 31
 #define READ_DAY        3
+/// The index of the month parameter. Value: 1 - 12
 #define READ_MONTH      4
+/// The index of the year parameter. Value: CHECKS_BY_THE_YEAR - 99
 #define READ_YEAR       5
-#define NUM_OF_DAY      5 // Friday
+/// The number of the day. Value: 1 (Monday) - 7 (Sunday). Doesn't use.
+#define NUM_OF_DAY      5  // Friday
+
 
 /**
- * The structure of date parameters used in the .bin file format
+ * The structure handles RTC module and represents the current time on the device
  */
 struct date_t: public FormatBase {
-private:
-    static iarduino_RTC m_watch;
-private:
-    uint8_t m_hours = 0;
-    uint8_t m_minutes = 0;
-    uint8_t m_seconds = 0;
-    uint8_t m_day = 1;
-    uint8_t m_month = 1;
-    uint8_t m_year = 0;
+public:
+    /// Sets the time on RTC from the device
+    static void setTime();
+
+    /// Sets the time on RTC from the deserialized array
+    static void setTime(uint8_t*);
+
 public:
     date_t() = default;
+
 public:
-    void begin() override {
-        m_watch.begin();
-    }
+    void begin() override;
 
-    log_t request() override {
-        m_watch.gettime();
-        m_hours = m_watch.Hours;
-        m_minutes = m_watch.minutes;
-        m_seconds = m_watch.seconds;
-        m_day = m_watch.day;
-        m_month = m_watch.month;
-        m_year = m_watch.year;
-        log_t errorCode = (this->isTimeReset() << ERROR_RTC_SET_UP);
-        return errorCode;
-    }
+    size_t size() const override;
 
-    void toSerial() const override {
-        Serial.print(m_hours);
-        Serial.print(":");
-        Serial.print(m_minutes);
-        Serial.print(":");
-        Serial.print(m_seconds);
-        Serial.print("\t");
-        Serial.print(m_day);
-        Serial.print(".");
-        Serial.print(m_month);
-        Serial.print(".20");
-        Serial.println(m_year);
-        Serial.print("Filename: ");
-        Serial.println(getFilename());
-    }
+    /// Time format: HH:MM:SS DD/MM/YY
+    uint8_t *serialize() const override;
 
-    static void setTime() {
-        // format: seconds (0-59), minutes (0-59), hours(0-23), day (1-31), month(1-12), year (0-99), name of day (1-7)
-        m_watch.settime(10, 7, 13, 12, 5, 23, NUM_OF_DAY);
-    }
+    log_t request() override;
 
-    static void setTime(uint8_t* const aDate) {
-        m_watch.settime(aDate[READ_SECONDS],
-                        aDate[READ_MINUTES],
-                        aDate[READ_HOURS],
-                        aDate[READ_DAY],
-                        aDate[READ_MONTH],
-                        aDate[READ_YEAR], NUM_OF_DAY);
-    }
+#ifdef DEBUG_MODE
+    void toSerial() const override;
+#endif
 
-    const char* getFilename() const {
-        static char filename[16]{};
-        static uint8_t saveDay = m_day - 1;
-
-        if(saveDay != m_day) {
-            sprintf(filename, "%02i%02i20%02i.bin",
-                    m_day,
-                    m_month,
-                    m_year);
-            saveDay = m_day;
-        }
-
-        return filename;
-    }
 public:
-    size_t size() const override {
-        return sizeof(uint8_t) * 6;
-    }
+    /// Gets filename by current time on RTC module
+    const char* getFilename() const;
 
-    /// HH:MM:SS DD/MM/YY
-    uint8_t *serialize() const override {
-        auto* date = new uint8_t[this->size()] {m_hours,
-                                                m_minutes,
-                                                m_seconds,
-                                                m_day,
-                                                m_month,
-                                                m_year};
-
-        return date;
-    }
 private:
-    bool isTimeReset() const {
-        return m_year < 23;
-    }
-};
+    /**
+     * Checks whether time is reset on RTC module.
+     * In a way to hard reset RTC take the battery off and turn down the device for a while.
+     */
+    bool isTimeReset() const;
 
-iarduino_RTC date_t::m_watch = RTC_DS3231;
+private:
+    static iarduino_RTC m_watch;
+
+private:
+    /// Value: 0 - 23
+    uint8_t m_hours = 0;
+    /// Value: 0 - 59
+    uint8_t m_minutes = 0;
+    /// Value: 0 - 59
+    uint8_t m_seconds = 0;
+    /// Value: 1 - 31
+    uint8_t m_day = 1;
+    /// Value: 1 - 12
+    uint8_t m_month = 1;
+    /// Value: 0 - 99
+    uint8_t m_year = 0;
+};

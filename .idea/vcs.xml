@@ -4,11 +4,9 @@
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/lib" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/lib/Arduino-Temperature-Control-Library" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/lib/ArduinoJson" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/lib/ArduinoThread" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/lib/Queue" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/lib/SD" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/lib/TimerOne" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/lib/iarduino_RTC" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/lib/microDS18B20" vcs="Git" />
   </component>
