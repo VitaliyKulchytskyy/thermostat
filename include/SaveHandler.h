@@ -4,45 +4,41 @@
 #include "cppQueue.h"
 #include "SD.h"
 
-#ifdef DEBUG_MODE
+namespace DataInfo {
     /**
-     * Print the raw data to console
-     * @param [in] pRawData pointer to the array of data
-     * @param formatSize the number of elements in array
-     * @param outputSys the numerical system to display the data
-     */
+    * Print the raw data to console
+    * @param [in] pRawData pointer to the array of data
+    * @param formatSize the number of elements in the array
+    * @param outputSys the numerical system to display the data
+    */
     void printRawData(uint8_t* pRawData, uint8_t formatSize, uint8_t outputSys = HEX);
-#endif
+};
 
 /**
  * The class handles saving information on an SD card
  */
 class SaveHandler {
 public:
-    explicit SaveHandler(size_t rawArraySize)
-        : m_rawArraySize(rawArraySize) {
-        m_mdStack = new cppQueue(rawArraySize, FILE_STACK_SIZE, FIFO, true);
-    }
+    explicit SaveHandler(size_t rawArraySize);
 
-    ~SaveHandler() {
-        delete m_mdStack;
-    }
+    ~SaveHandler();
+
 public:
     /**
      * Add data to the data stack
      * @param [in] pRawData pointer to the array of data
-     * @retval true if stack is overflow
-     * @retval false if stack isn't overflow
+     * @retval true if queue is overflow
+     * @retval false if queue isn't overflow
      */
-    bool add(const void * pRawData);
+    bool add(const void * pRawData) __attribute__((nonnull));
 
     /**
-     * Upload all data from the data stack on an SD card
+     * Upload all data from the data queue on an SD card
      * @param filename the name of file to save the data
      * @retval true if file was written
      * @retval false if file wasn't written
      */
-    bool upload(const char* filename);
+    bool upload(const char* filename) __attribute__((nonnull));
 
 private:
     static File writeBin;

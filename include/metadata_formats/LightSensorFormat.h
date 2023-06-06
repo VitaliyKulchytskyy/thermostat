@@ -1,4 +1,6 @@
 #pragma once
+#include <Wire.h>
+#include "BH1750.h"
 #include "metadata_formats/LogFormat.h"
 #include "metadata_formats/FormatBase.h"
 
@@ -7,13 +9,14 @@
  */
 struct light_t: public FormatBase {
 private:
-    uint16_t m_lux = 0;
+    float m_lux = 0;
+    static BH1750 m_lightMeter;
 
 public:
     light_t() = default;
 
 public:
-    void begin() override {}
+    void begin() override;
 
     size_t size() const override;
 
@@ -21,7 +24,7 @@ public:
 
     log_t request() override;
 
-#ifdef DEBUG_MODE
+#ifdef DEBUG_REQUEST_MODE
     void toSerial() const override;
 #endif
 };

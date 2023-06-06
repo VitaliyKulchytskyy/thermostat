@@ -7,6 +7,7 @@
 namespace ThreadHandler {
     /// Initialize the threads
     void begin();
+
     /// Run the threads
     void run();
 };

@@ -1,8 +1,12 @@
 #include "metadata_formats/LightSensorFormat.h"
 
+void light_t::begin() {
+    Wire.begin();
+    m_lightMeter.begin(BH1750::CONTINUOUS_LOW_RES_MODE);
+}
 
 size_t light_t::size() const {
-    return sizeof(uint16_t);;
+    return sizeof(float);
 }
 
 uint8_t *light_t::serialize() const {
@@ -12,14 +16,18 @@ uint8_t *light_t::serialize() const {
 }
 
 log_t light_t::request() {
-    m_lux = analogRead(A0);
+    if (m_lightMeter.measurementReady())
+        m_lux = m_lightMeter.readLightLevel();
+
     return 0;
 }
 
-#ifdef DEBUG_MODE
+#ifdef DEBUG_REQUEST_MODE
 void light_t::toSerial() const {
     Serial.print("Light sensor: ");
     Serial.print(m_lux);
-    Serial.println(" lux");
+    //Serial.println(" lux");
 }
 #endif
+
+BH1750 light_t::m_lightMeter = 0x23;

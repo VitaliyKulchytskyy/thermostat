@@ -1,11 +1,22 @@
 #include "metadata_formats/TemperatureFormat.h"
 
+/* Compile-time calculation */
+constexpr double revPivotTemp = 1.0 / (PIVOT_TEMPERATURE + 273.15);
+constexpr double revBetaCoef = 1.0 / BETA_COEFFICIENT_NTC;
 
-OneWire temperature_t::oneWire = ONE_WIRE_BUS;
-DallasTemperature temperature_t::sensors = &oneWire;
-DeviceAddress temperature_t::inside  = {0x28, 0x3A, 0x2B, 0xDB, 0x58, 0x20, 0x1, 0xE0};
-DeviceAddress temperature_t::outside = {0x28, 0x91, 0xFF, 0xF9, 0xD,  0x0,  0x0, 0xA3};
 
+#if isDSModule(TEMP_TYPE_INSIDE) || isDSModule(TEMP_TYPE_OUTSIDE)
+    OneWire temperature_t::oneWire = PIN_ONE_WIRE_BUS;
+    DallasTemperature temperature_t::sensors = &oneWire;
+
+    #if isDSModule(TEMP_TYPE_INSIDE)
+        DeviceAddress temperature_t::inside  = {0x28, 0x3A, 0x2B, 0xDB, 0x58, 0x20, 0x1, 0xE0};
+    #else
+        DeviceAddress temperature_t::outside = {0x28, 0x91, 0xFF, 0xF9, 0xD,  0x0,  0x0, 0xA3};
+    #endif
+#endif
+
+#if isDSModule(TEMP_TYPE_INSIDE) || isDSModule(TEMP_TYPE_OUTSIDE)
 bool temperature_t::setTemperature(const DeviceAddress& deviceIndex, float &outTempC) {
     float tempC = sensors.getTempC(deviceIndex);
 
@@ -15,11 +26,30 @@ bool temperature_t::setTemperature(const DeviceAddress& deviceIndex, float &outT
     outTempC = tempC;
     return false;
 }
+#endif
+
+#if isNTCModule(TEMP_TYPE_INSIDE) || isNTCModule(TEMP_TYPE_OUTSIDE)
+bool temperature_t::setTemperature(uint8_t readPin, float &outTempC) {
+    double analog = analogRead(readPin);
+    analog = analog / (1023 - analog);
+    analog = (log(analog) / BETA_COEFFICIENT_NTC) + revPivotTemp;
+    outTempC = (float)(1.0 / analog - 273.15);
+    return false;
+}
+#endif
 
 void temperature_t::begin() {
-    sensors.begin();
-    sensors.setResolution(inside, TEMPERATURE_PRECISION, true);
-    sensors.setResolution(outside, 12, true);
+    #if isNTCModule(TEMP_TYPE_INSIDE) || isNTCModule(TEMP_TYPE_OUTSIDE)
+        sensors.begin();
+
+        #if isDSModule(TEMP_TYPE_INSIDE)
+            sensors.setResolution(inside, TEMPERATURE_INSIDE_PRECISION, true);
+        #endif
+
+        #if isDSModule(TEMP_TYPE_OUTSIDE)
+            sensors.setResolution(outside, TEMPERATURE_OUTSIDE_PRECISION, true);
+        #endif
+    #endif
 }
 
 size_t temperature_t::size() const {
@@ -35,8 +65,19 @@ uint8_t *temperature_t::serialize() const {
 
 log_t temperature_t::request() {
     sensors.requestTemperatures();
-    bool setInsideTemp = setTemperature(inside, insideTemperatureC);
-    bool setOutsideTemp = setTemperature(outside, outsideTemperatureC);
+    bool setInsideTemp, setOutsideTemp;
+
+    #if isDSModule(TEMP_TYPE_INSIDE)
+        setInsideTemp = setTemperature(inside, insideTemperatureC);
+    #else
+        setInsideTemp = setTemperature(PIN_TEMP_MODULE_INSIDE, insideTemperatureC);
+    #endif
+
+    #if isDSModule(TEMP_TYPE_OUTSIDE)
+        setOutsideTemp = setTemperature(outside, outsideTemperatureC);
+    #else
+        setOutsideTemp = setTemperature(PIN_TEMP_MODULE_OUTSIDE, outsideTemperatureC);
+    #endif
 
     log_t errorCode = (setInsideTemp << BAD_REQUEST_THERMOMETER_INSIDE)
                     | (setOutsideTemp << BAD_REQUEST_THERMOMETER_OUTSIDE);
@@ -44,7 +85,7 @@ log_t temperature_t::request() {
     return errorCode;
 }
 
-#ifdef DEBUG_MODE
+#ifdef DEBUG_REQUEST_MODE
 void temperature_t::toSerial() const {
     Serial.print("inside: ");
     Serial.print(insideTemperatureC);
@@ -54,6 +95,8 @@ void temperature_t::toSerial() const {
 }
 #endif
 
+#if isDSModule(TEMP_TYPE_INSIDE) || isDSModule(TEMP_TYPE_OUTSIDE)
 bool temperature_t::isParasitePower() const {
     return sensors.isParasitePowerMode();;
 }
+#endif

@@ -24,7 +24,7 @@ public:
 
     log_t request() override;
 
-#ifdef DEBUG_MODE
+#ifdef DEBUG_REQUEST_MODE
     void toSerial() const override;
 
     /// Prints the log code of the last request
@@ -101,7 +101,7 @@ log_t metadata_t<N>::request() {
     return requestLog;
 }
 
-#ifdef DEBUG_MODE
+#ifdef DEBUG_REQUEST_MODE
 template<size_t N>
 void metadata_t<N>::toSerial() const {
     this->printLog();

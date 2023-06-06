@@ -46,7 +46,7 @@ public:
 
     log_t request() override;
 
-#ifdef DEBUG_MODE
+#ifdef DEBUG_REQUEST_MODE
     void toSerial() const override;
 #endif
 

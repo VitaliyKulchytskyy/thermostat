@@ -6,7 +6,7 @@ namespace {
     light_t g_light;
     thermoreg_f g_thermoreg(g_tempC);
 
-    FormatBase* g_formats[4]{&g_date, &g_tempC, &g_light, &g_thermoreg};
+    FormatBase* g_formats[3]{&g_date, &g_tempC, &g_thermoreg}; // &g_light
     constexpr size_t formatsNum = sizeof(g_formats) / sizeof(g_formats[0]);
     metadata_t<formatsNum> metadata(g_formats);
 
@@ -21,14 +21,15 @@ namespace {
 };
 
 namespace {
-    /// Save the data of request parameters to the data stack
+    /// Save the data of request parameters to the data queue
     void saveMetadataImage() {
         static bool isStackOverflow = false;
-        metadata.requestLog |= ((isStackOverflow & !isPrevImageSaved) << ERROR_FILE_STACK_OVERFLOW);
+        metadata.requestLog |= ((isStackOverflow & !isPrevImageSaved) << ERROR_FILE_QUEUE_OVERFLOW);
 
         auto temp = metadata.serialize();
-        #ifdef DEBUG_MODE
+        #if (defined DEBUG_REQUEST_MODE && !defined PLOT_MODE)
             metadata.toSerial();
+            Serial.println();
         #endif
         isStackOverflow = saver.add(temp);
         delete[] temp;
@@ -37,11 +38,14 @@ namespace {
     /// Empty the data stack by recording saved data on an SD card
     void saveMetadataOnSD() {
         if(!(1 & (metadata.requestLog >> INFO_THERMOREGULATION_START)
-             || 1 & (metadata.requestLog >> INFO_THERMOREGULATION_END)))
+          || 1 & (metadata.requestLog >> INFO_THERMOREGULATION_END)))
             saveMetadataImage();
 
         isPrevImageSaved = saver.upload(g_date.getFilename());
-        Serial.println();
+
+        #if (defined(DEBUG_THREAD_MODE) && !defined(PLOT_MODE))
+            Serial.println("-> save metadata");
+        #endif
     }
 
     /**
@@ -54,6 +58,10 @@ namespace {
         if(1 & (logCode >> INFO_THERMOREGULATION_START)
         || 1 & (logCode >> INFO_THERMOREGULATION_END))
             saveMetadataImage();
+
+        #if (defined(DEBUG_THREAD_MODE) && !defined(PLOT_MODE))
+           Serial.println("-> request");
+        #endif
     }
 
     /**

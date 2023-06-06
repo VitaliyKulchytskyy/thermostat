@@ -5,6 +5,7 @@
     <mapping directory="$PROJECT_DIR$/lib" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/lib/Arduino-Temperature-Control-Library" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/lib/ArduinoThread" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/lib/BH1750" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/lib/Queue" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/lib/SD" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/lib/iarduino_RTC" vcs="Git" />

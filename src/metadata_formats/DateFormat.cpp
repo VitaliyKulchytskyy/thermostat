@@ -19,7 +19,7 @@ log_t date_t::request() {
     return errorCode;
 }
 
-#ifdef DEBUG_MODE
+#ifdef DEBUG_REQUEST_MODE
 void date_t::toSerial() const {
     Serial.print(m_hours);
     Serial.print(":");
