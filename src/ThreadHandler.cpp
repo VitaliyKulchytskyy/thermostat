@@ -6,12 +6,12 @@ namespace {
     light_t g_light;
     thermoreg_f g_thermoreg(g_tempC);
 
-    FormatBase* g_formats[3]{&g_date, &g_tempC, &g_thermoreg}; // &g_light
+    FormatBase* g_formats[4]{&g_date, &g_tempC, &g_thermoreg, &g_light};
     constexpr size_t formatsNum = sizeof(g_formats) / sizeof(g_formats[0]);
     metadata_t<formatsNum> metadata(g_formats);
 
     SaveHandler saver(metadata.size());
-    ThreadController m_threads = ThreadController();
+    //ThreadController m_threads = ThreadController();
 
     /**
      * Saves the save state of the previous image in a way to detects
@@ -111,7 +111,7 @@ void ThreadHandler::begin() {
     if(1 & (logCode >> ERROR_RTC_SET_UP))
         readRTCSetupFile();
 
-    Thread m_thermoregulation = Thread();
+/*    Thread m_thermoregulation = Thread();
     m_thermoregulation.setInterval(THREAD_THERMOSTAT_MS);
     m_thermoregulation.onRun(requestAllModules);
     m_threads.add(&m_thermoregulation);
@@ -119,9 +119,13 @@ void ThreadHandler::begin() {
     Thread m_dataCollector = Thread();
     m_dataCollector.setInterval(THREAD_SAVE_DATA_SD);
     m_dataCollector.onRun(saveMetadataOnSD);
-    m_threads.add(&m_dataCollector);
+    m_threads.add(&m_dataCollector);*/
 }
 
 void ThreadHandler::run() {
-    m_threads.run();
+    requestAllModules();
+    delay(1000);
+    saveMetadataOnSD();
+    delay(2000);
+    //m_threads.run();
 }

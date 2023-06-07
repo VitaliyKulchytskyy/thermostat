@@ -2,6 +2,7 @@
 
 
 void thermoreg_f::begin() {
+    pinMode(PIN_RELAY_PUMP, OUTPUT);
     relayGet(m_temp.insideTemperatureC);
 }
 
@@ -20,7 +21,7 @@ log_t thermoreg_f::request() {
 
 log_t thermoreg_f::thermoregulation(float tempC) {
     const bool state = relayGet(tempC);
-    pinMode(PIN_RELAY_PUMP, state);
+    digitalWrite(PIN_RELAY_PUMP, state);
 
     static bool prevState = false;
 

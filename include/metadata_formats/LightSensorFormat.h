@@ -11,7 +11,6 @@ struct light_t: public FormatBase {
 private:
     float m_lux = 0;
     static BH1750 m_lightMeter;
-
 public:
     light_t() = default;
 

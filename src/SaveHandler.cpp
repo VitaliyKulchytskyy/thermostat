@@ -11,7 +11,7 @@ void DataInfo::printRawData(uint8_t *pRawData, uint8_t formatSize, uint8_t outpu
 }
 
 
-File SaveHandler::writeBin;
+File  SaveHandler::writeBin;
 
 SaveHandler::SaveHandler(size_t rawArraySize)
     : m_rawArraySize(rawArraySize),
@@ -48,10 +48,11 @@ bool SaveHandler::upload(const char *filename) {
 
     while (!m_mdStack->isEmpty()) {
         writeBin = SD.open(filename, FILE_WRITE);
-        Serial.print("File could be open: ");
-        Serial.println(writeBin);
-        if(!writeBin)
-            return false;
+
+        // Біс його знає чому при взаємодії з BH1750 відкритий файл думає,
+        // що він закритий, хоч він нормально записується без перевірки нижче
+        // if(!writeBin)
+        //     return false;
 
         auto temp = new uint8_t [m_rawArraySize];
         m_mdStack->pop(temp);

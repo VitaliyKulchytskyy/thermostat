@@ -6,18 +6,22 @@ void light_t::begin() {
 }
 
 size_t light_t::size() const {
-    return sizeof(float);
+    return sizeof(m_lux);
 }
 
 uint8_t *light_t::serialize() const {
     auto* output = new uint8_t[this->size()];
-    memcpy(output, &m_lux, this->size());
+    memcpy(output, &m_lux, sizeof(m_lux));
     return output;
 }
 
 log_t light_t::request() {
-    if (m_lightMeter.measurementReady())
-        m_lux = m_lightMeter.readLightLevel();
+    while (!m_lightMeter.measurementReady(true)) {
+        yield();
+    }
+
+    m_lux = m_lightMeter.readLightLevel();
+    m_lightMeter.configure(BH1750::ONE_TIME_HIGH_RES_MODE);
 
     return 0;
 }
@@ -25,9 +29,8 @@ log_t light_t::request() {
 #ifdef DEBUG_REQUEST_MODE
 void light_t::toSerial() const {
     Serial.print("Light sensor: ");
-    Serial.print(m_lux);
-    //Serial.println(" lux");
+    Serial.println(m_lux);
 }
 #endif
 
-BH1750 light_t::m_lightMeter = 0x23;
+BH1750 light_t::m_lightMeter = 0x23;  // or 0x5C

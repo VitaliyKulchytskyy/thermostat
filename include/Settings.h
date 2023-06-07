@@ -58,7 +58,7 @@
 
 /* Debug modes */
 /// Prints information about format parameters per request
-//#define DEBUG_REQUEST_MODE
+#define DEBUG_REQUEST_MODE
 /// Build a run time graphic of temperature measurement and the thermoregulation process. Disable other debug modes
 //#define PLOT_MODE
 /// Debug the threads
@@ -66,4 +66,4 @@
 /// Debug the way how information is saved on an SD card and on the queue of data
 //#define DEBUG_SAVE_HANDLER_MODE
 /// Debug the integrity of serialized image
-#define DEBUG_SERIALIZATION
+//#define DEBUG_SERIALIZATION
