@@ -1,13 +1,11 @@
 #pragma once
-//#include <Thread.h>
-//#include <ThreadController.h>
 #include "Metadata.h"
 #include "SaveHandler.h"
 
 namespace ThreadHandler {
-    /// Initialize the threads
+    /// Setup the device
     void begin();
 
-    /// Run the threads
-    void run();
+    /// Run the device
+    void run() __attribute__((noreturn));
 };

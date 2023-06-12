@@ -11,7 +11,6 @@ namespace {
     metadata_t<formatsNum> metadata(g_formats);
 
     SaveHandler saver(metadata.size());
-    //ThreadController m_threads = ThreadController();
 
     /**
      * Saves the save state of the previous image in a way to detects
@@ -110,22 +109,16 @@ void ThreadHandler::begin() {
 
     if(1 & (logCode >> ERROR_RTC_SET_UP))
         readRTCSetupFile();
-
-/*    Thread m_thermoregulation = Thread();
-    m_thermoregulation.setInterval(THREAD_THERMOSTAT_MS);
-    m_thermoregulation.onRun(requestAllModules);
-    m_threads.add(&m_thermoregulation);
-
-    Thread m_dataCollector = Thread();
-    m_dataCollector.setInterval(THREAD_SAVE_DATA_SD);
-    m_dataCollector.onRun(saveMetadataOnSD);
-    m_threads.add(&m_dataCollector);*/
 }
 
 void ThreadHandler::run() {
-    requestAllModules();
-    delay(1000);
-    saveMetadataOnSD();
-    delay(2000);
-    //m_threads.run();
+    while(true) {
+        const uint64_t getTime = millis();
+
+        if(uint64_t(getTime % THREAD_THERMOSTAT_MS) == 0)
+            requestAllModules();
+
+        if(uint64_t(getTime % THREAD_SAVE_DATA_SD) == 0)
+            saveMetadataOnSD();
+    }
 }
