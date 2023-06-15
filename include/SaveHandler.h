@@ -41,9 +41,9 @@ public:
     bool upload(const char* filename) __attribute__((nonnull));
 
 private:
-    static File writeBin;
+    static File m_writeBin;
 
 private:
     const size_t m_rawArraySize = 0;
-    cppQueue* m_mdStack;
+    cppQueue* m_mdQueue;
 };

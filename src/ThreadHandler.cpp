@@ -4,7 +4,7 @@ namespace {
     date_t g_date;
     temperature_t g_tempC;
     light_t g_light;
-    thermoreg_f g_thermoreg(g_tempC);
+    thermoreg_t g_thermoreg(g_tempC);
 
     FormatBase* g_formats[4]{&g_date, &g_tempC, &g_thermoreg, &g_light};
     constexpr size_t formatsNum = sizeof(g_formats) / sizeof(g_formats[0]);

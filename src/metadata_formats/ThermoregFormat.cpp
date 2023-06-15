@@ -1,26 +1,26 @@
 #include "metadata_formats/ThermoregFormat.h"
 
 
-void thermoreg_f::begin() {
+void thermoreg_t::begin() {
     pinMode(PIN_RELAY_PUMP, OUTPUT);
-    relayGet(m_temp.insideTemperatureC);
+    getRelay(m_temp.insideTemperatureC);
 }
 
-size_t thermoreg_f::size() const {
+size_t thermoreg_t::size() const {
     return 0;
 }
 
-uint8_t *thermoreg_f::serialize() const {
+uint8_t *thermoreg_t::serialize() const {
     return nullptr;
 }
 
-log_t thermoreg_f::request() {
+log_t thermoreg_t::request() {
     const float tempC = m_temp.insideTemperatureC;
     return thermoregulation(tempC);
 }
 
-log_t thermoreg_f::thermoregulation(float tempC) {
-    const bool state = relayGet(tempC);
+log_t thermoreg_t::thermoregulation(float tempC) {
+    const bool state = getRelay(tempC);
     digitalWrite(PIN_RELAY_PUMP, state);
 
     static bool prevState = false;
@@ -37,12 +37,12 @@ log_t thermoreg_f::thermoregulation(float tempC) {
     return 0;
 }
 
-log_t thermoreg_f::setState(log_t logCode, bool &outState, bool getState) {
+log_t thermoreg_t::setState(log_t logCode, bool &outState, bool getState) {
     outState = getState;
     return logCode;
 }
 
-bool thermoreg_f::relayGet(float inputTempC, float k) {
+bool thermoreg_t::getRelay(float inputTempC, float k) {
     static float prevInput = 0.0;
     static bool relayStat = false;
     static const float hysteresis = HYSTERESIS_C / 2;

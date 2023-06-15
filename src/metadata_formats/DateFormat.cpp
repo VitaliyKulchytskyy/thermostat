@@ -42,7 +42,7 @@ const char *date_t::getFilename() const {
     static uint8_t saveDay = m_day - 1;
 
     if(saveDay != m_day) {
-        sprintf(filename, "%02i%02i20%02i.bin",
+        sprintf(filename, "%02i%02i20%02i.thd",
                 m_day,
                 m_month,
                 m_year);

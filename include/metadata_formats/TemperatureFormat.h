@@ -59,12 +59,10 @@ public:
 
 private:
 #if isDSModule(TEMP_TYPE_INSIDE) || isDSModule(TEMP_TYPE_OUTSIDE)
-    static OneWire oneWire;
-    static DallasTemperature sensors;
+    static OneWire m_oneWire;
+    static DallasTemperature m_sensors;
     /// The temperature module used to record temperature of the main device
-    static DeviceAddress inside;
-    /// The temperature module used to record outside temperature
-    static DeviceAddress outside;
+    static DeviceAddress m_dsAddr;
 #endif
 
 public:

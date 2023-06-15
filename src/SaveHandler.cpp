@@ -11,23 +11,23 @@ void DataInfo::printRawData(uint8_t *pRawData, uint8_t formatSize, uint8_t outpu
 }
 
 
-File  SaveHandler::writeBin;
+File  SaveHandler::m_writeBin;
 
 SaveHandler::SaveHandler(size_t rawArraySize)
     : m_rawArraySize(rawArraySize),
-      m_mdStack{new cppQueue(rawArraySize,
+      m_mdQueue{new cppQueue(rawArraySize,
                              FILE_QUEUE_SIZE,
                              FIFO,
                              true)}
 {}
 
 SaveHandler::~SaveHandler() {
-    delete m_mdStack;
+    delete m_mdQueue;
 }
 
 bool SaveHandler::add(const void *const pRawData) {
-    m_mdStack->push(pRawData);
-    const bool isQueueFull = m_mdStack->isFull();
+    m_mdQueue->push(pRawData);
+    const bool isQueueFull = m_mdQueue->isFull();
 
     #if (defined(DEBUG_SAVE_HANDLER_MODE) && !defined(PLOT_MODE))
         Serial.println("--> add an image to queue");
@@ -43,22 +43,22 @@ bool SaveHandler::add(const void *const pRawData) {
 }
 
 bool SaveHandler::upload(const char *filename) {
-    if(!SD.begin(SD_CHIP_SELECT) || m_mdStack->isEmpty())
+    if(!SD.begin(SD_CHIP_SELECT) || m_mdQueue->isEmpty())
         return false;
 
-    while (!m_mdStack->isEmpty()) {
-        writeBin = SD.open(filename, FILE_WRITE);
+    while (!m_mdQueue->isEmpty()) {
+        m_writeBin = SD.open(filename, FILE_WRITE);
 
         // Біс його знає чому при взаємодії з BH1750 відкритий файл думає,
         // що він закритий, хоч він нормально записується без перевірки нижче
-        // if(!writeBin)
+        // if(!m_writeBin)
         //     return false;
 
         auto temp = new uint8_t [m_rawArraySize];
-        m_mdStack->pop(temp);
+        m_mdQueue->pop(temp);
 
-        writeBin.write(temp, m_rawArraySize);
-        writeBin.close();
+        m_writeBin.write(temp, m_rawArraySize);
+        m_writeBin.close();
 
         #if (defined(DEBUG_SAVE_HANDLER_MODE) && !defined(PLOT_MODE))
             Serial.println("--> save an image to the SD");

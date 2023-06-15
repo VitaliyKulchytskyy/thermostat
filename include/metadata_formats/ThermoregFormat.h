@@ -6,7 +6,7 @@
 /**
  * The structure handles the thermoregulation process in the device
  */
-struct thermoreg_f: public FormatBase {
+struct thermoreg_t: public FormatBase {
 private:
     /**
      * Handles the thermoregulation process by reading the input temperature.
@@ -35,10 +35,10 @@ private:
      * @retval true enable the pump
      * @retval false disable the pump
      */
-    static bool relayGet(float inputTempC, float k = THERMOSTAT_INERTIA);
+    static bool getRelay(float inputTempC, float k = THERMOSTAT_INERTIA);
 
 public:
-    explicit thermoreg_f(const temperature_t &mTemp) : m_temp(mTemp) {}
+    explicit thermoreg_t(const temperature_t &mTemp) : m_temp(mTemp) {}
 
 public:
     void begin() override;

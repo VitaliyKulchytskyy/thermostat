@@ -37,22 +37,18 @@ constexpr uint64_t MINUTE = (60 * SECOND);
 
 /* Temperature module (DS18B20 & NTC_10K) */
 /// The type of the temperature module to monitoring inside temperature
-#define TEMP_TYPE_INSIDE        TEMP_MODULE_NTC10K
+#define TEMP_TYPE_INSIDE            TEMP_MODULE_DS18B20
 /// The type of the temperature module to monitoring outside temperature
-#define TEMP_TYPE_OUTSIDE       TEMP_MODULE_DS18B20
+#define TEMP_TYPE_OUTSIDE           TEMP_MODULE_NTC10K
 /// The pin number connected to the DS18B20 moduleS for TEMP_MODULE_DS18B20 types
 #define PIN_ONE_WIRE_BUS            2
 /// The pin number connected to the NTC_XK (X - resistance of the module (kOm)) module for TEMP_MODULE_NTCxK types
-#define PIN_TEMP_MODULE_INSIDE      A1
-/// The pin number connected to the NTC_XK (X - resistance of the module (kOm)) module for TEMP_MODULE_NTCxK types
-#define PIN_TEMP_MODULE_OUTSIDE     A2
+#define PIN_TEMP_MODULE_NTC         A1
 /// Set the temperature precision for the DS18B20 module. Value: 9 - 12.
-#define TEMPERATURE_INSIDE_PRECISION        9
-/// Set the temperature precision for the DS18B20 module. Value: 9 - 12.
-#define TEMPERATURE_OUTSIDE_PRECISION       12
+#define TEMPERATURE_DS_PRECISION    12
 /// Set the beta coefficient for inside NTC module
-#define BETA_COEFFICIENT_NTC            3950
-#define PIVOT_TEMPERATURE               25
+#define BETA_COEFFICIENT_NTC        3950
+#define PIVOT_TEMPERATURE           25
 
 
 /* Thermoregulation settings */
@@ -70,7 +66,7 @@ constexpr uint64_t MINUTE = (60 * SECOND);
 /// The interval (in milliseconds) to invoke thermostat checker
 constexpr uint32_t THREAD_THERMOSTAT_MS = SECOND;
 /// The interval (in milliseconds) to invoke saving data on an SD
-constexpr uint32_t THREAD_SAVE_DATA_SD = MINUTE;
+constexpr uint32_t THREAD_SAVE_DATA_SD = 5 * SECOND;
 /// The baud of the serial port
 #define SERIAL_BEGIN_BAUD       9600
 
