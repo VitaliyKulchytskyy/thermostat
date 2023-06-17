@@ -40,8 +40,15 @@ public:
      */
     bool upload(const char* filename) __attribute__((nonnull));
 
+    bool readFile(const char *filename,
+                  uint8_t *&rpRawFile,
+                  size_t readBytes,
+                  size_t offset = 0);
+
+    bool isFileExists(const char *filename) { return SD.exists(filename); }
+
 private:
-    static File m_writeBin;
+    static File m_binFile;
 
 private:
     const size_t m_rawArraySize = 0;

@@ -1,5 +1,6 @@
 #include "SaveHandler.h"
 
+#if isDebugModeEnable()
 void DataInfo::printRawData(uint8_t *pRawData, uint8_t formatSize, uint8_t outputSys) {
     Serial.print("Raw format: ");
     for(uint8_t i = 0; i < formatSize; i++) {
@@ -9,16 +10,17 @@ void DataInfo::printRawData(uint8_t *pRawData, uint8_t formatSize, uint8_t outpu
 
     Serial.println();
 }
+#endif
 
 
-File  SaveHandler::m_writeBin;
+File  SaveHandler::m_binFile;
 
 SaveHandler::SaveHandler(size_t rawArraySize)
-    : m_rawArraySize(rawArraySize),
-      m_mdQueue{new cppQueue(rawArraySize,
-                             FILE_QUEUE_SIZE,
-                             FIFO,
-                             true)}
+        : m_rawArraySize(rawArraySize),
+          m_mdQueue{new cppQueue(rawArraySize,
+                                 FILE_QUEUE_SIZE,
+                                 FIFO,
+                                 true)}
 {}
 
 SaveHandler::~SaveHandler() {
@@ -47,29 +49,40 @@ bool SaveHandler::upload(const char *filename) {
         return false;
 
     while (!m_mdQueue->isEmpty()) {
-        m_writeBin = SD.open(filename, FILE_WRITE);
+        m_binFile = SD.open(filename, FILE_WRITE);
 
         // Біс його знає чому при взаємодії з BH1750 відкритий файл думає,
         // що він закритий, хоч він нормально записується без перевірки нижче
-        // if(!m_writeBin)
+        // if(!m_binFile)
         //     return false;
 
         auto temp = new uint8_t [m_rawArraySize];
         m_mdQueue->pop(temp);
 
-        m_writeBin.write(temp, m_rawArraySize);
-        m_writeBin.close();
+        m_binFile.write(temp, m_rawArraySize);
+        m_binFile.close();
 
-        #if (defined(DEBUG_SAVE_HANDLER_MODE) && !defined(PLOT_MODE))
-            Serial.println("--> save an image to the SD");
-        #elif (defined(DEBUG_SERIALIZATION) && !defined(PLOT_MODE))
-            Serial.println("<- Written on an SD:");
-            DataInfo::printRawData(temp, m_rawArraySize);
-            Serial.println();
-        #endif
+    #if (defined(DEBUG_SAVE_HANDLER_MODE) && !defined(PLOT_MODE))
+        Serial.println("--> save an image to the SD");
+    #elif (defined(DEBUG_SERIALIZATION) && !defined(PLOT_MODE))
+        Serial.println("<- Written on an SD:");
+        DataInfo::printRawData(temp, m_rawArraySize);
+        Serial.println();
+    #endif
 
         delete[] temp;
     }
 
+    return true;
+}
+
+bool SaveHandler::readFile(const char *filename, uint8_t *&rpRawFile, size_t readBytes, size_t offset) {
+    m_binFile = SD.open(filename, FILE_READ);
+    if(!m_binFile)
+        return false;
+
+    m_binFile.readBytes(&rpRawFile[offset], readBytes - offset);
+
+    m_binFile.close();
     return true;
 }
