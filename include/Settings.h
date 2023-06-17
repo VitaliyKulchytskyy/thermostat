@@ -13,7 +13,7 @@
 //#define DEBUG_SAVE_HANDLER_MODE
 /// Debug the integrity of serialized image
 //#define DEBUG_SERIALIZATION
-
+//#define DEBUG_CONFIG_DESERIALIZATION
 
 /* SD card */
 /// Pin of chip select
@@ -31,8 +31,6 @@
 #define TEMP_MODULE_DS18B20     0
 /// Temperature module: NTC10K (thermistor)
 #define TEMP_MODULE_NTC10K      10000
-constexpr uint64_t SECOND = 1000;
-constexpr uint64_t MINUTE = (60 * SECOND);
 
 
 /* Temperature module (DS18B20 & NTC_10K) */
@@ -63,10 +61,6 @@ constexpr uint64_t MINUTE = (60 * SECOND);
 
 
 /* Threads settings */
-/// The interval (in milliseconds) to invoke thermostat checker
-constexpr uint32_t THREAD_THERMOSTAT_MS = SECOND;
-/// The interval (in milliseconds) to invoke saving data on an SD
-constexpr uint32_t THREAD_SAVE_DATA_SD = 5 * SECOND;
 /// The baud of the serial port
 #define SERIAL_BEGIN_BAUD       9600
 
