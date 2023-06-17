@@ -1,0 +1,8 @@
+//
+// Created by vitam on 17.06.2023.
+//
+
+#ifndef TERMOSTAT_CONFIGHANDLER_H
+#define TERMOSTAT_CONFIGHANDLER_H
+
+#endif //TERMOSTAT_CONFIGHANDLER_H
