@@ -71,3 +71,11 @@ constexpr uint32_t THREAD_SAVE_DATA_SD = 5 * SECOND;
 #define SERIAL_BEGIN_BAUD       9600
 
 
+/* EEPROM addresses */
+#define ADDRESS_POINT_C             0
+#define ADDRESS_HYSTERESIS          4
+#define ADDRESS_INERTIA             8
+#define ADDRESS_THREAD_THERMOSTAT   12
+#define ADDRESS_THREAD_SAVE_DATA    16
+
+

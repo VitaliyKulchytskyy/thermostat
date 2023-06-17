@@ -4,7 +4,9 @@ namespace {
     date_t g_date;
     temperature_t g_tempC;
     light_t g_light;
-    thermoreg_t g_thermoreg(g_tempC);
+    thermoreg_t g_thermoreg(eeprom_read_float(ADDRESS_POINT_C),
+                            eeprom_read_float(reinterpret_cast<const float *>(ADDRESS_HYSTERESIS)),
+                            eeprom_read_float(reinterpret_cast<const float *>(ADDRESS_INERTIA)), g_tempC);
 
     FormatBase* g_formats[4]{&g_date, &g_tempC, &g_thermoreg, &g_light};
     constexpr size_t formatsNum = sizeof(g_formats) / sizeof(g_formats[0]);
@@ -109,16 +111,25 @@ void ThreadHandler::begin() {
 
     if(1 & (logCode >> ERROR_RTC_SET_UP))
         readRTCSetupFile();
+
+    eeprom_update_float(ADDRESS_POINT_C, 34.0);
+    eeprom_update_float(reinterpret_cast<float *>(ADDRESS_HYSTERESIS), 4.0);
+    eeprom_update_float(reinterpret_cast<float *>(ADDRESS_INERTIA), 0.5);
+    eeprom_update_dword(reinterpret_cast<uint32_t *>(ADDRESS_THREAD_THERMOSTAT), 1000);
+    eeprom_update_dword(reinterpret_cast<uint32_t *>(ADDRESS_THREAD_SAVE_DATA), 5000);
 }
 
 void ThreadHandler::run() {
+    const uint32_t thrdThermostatInter = eeprom_read_dword(reinterpret_cast<const uint32_t *>(ADDRESS_THREAD_THERMOSTAT));
+    const uint32_t thrdSaveDataInter = eeprom_read_dword(reinterpret_cast<const uint32_t *>(ADDRESS_THREAD_SAVE_DATA));
+
     while(true) {
         const uint64_t getTime = millis();
 
-        if(uint64_t(getTime % THREAD_THERMOSTAT_MS) == 0)
+        if(uint64_t(getTime % thrdThermostatInter) == 0)
             requestAllModules();
 
-        if(uint64_t(getTime % THREAD_SAVE_DATA_SD) == 0)
+        if(uint64_t(getTime % thrdSaveDataInter) == 0)
             saveMetadataOnSD();
     }
 }

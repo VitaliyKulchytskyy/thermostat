@@ -16,29 +16,33 @@ private:
      * @retval INFO_THERMOREGULATION_PROCESS thermoregulation process is running
      * @retval INFO_THERMOREGULATION_END thermoregulation process has ended
      */
-    static log_t thermoregulation(float tempC);
+    log_t thermoregulation(float tempC) const;
 
     /**
-     * Handles the returning of the thermoregulation method
+     * Handles the returning of the thermoregulation method (macros)
      * @param [in] logCode the log code of the thermoregulation process
      * @param [out] outState sets state before returning
      * @param [in] getState read and save state before returning
      * @return the log code
      */
-    static log_t setState(log_t logCode, bool &outState, bool getState);
+    static log_t setState(log_t logCode, bool &outState, bool getState) ;
 
     /**
      * Enable or disable the pump based on inputTempC value and
      * measurement of temperature rise rate
      * @param inputTempC input temperature
-     * @param k coefficient of system inertia
      * @retval true enable the pump
      * @retval false disable the pump
      */
-    static bool getRelay(float inputTempC, float k = THERMOSTAT_INERTIA);
+    bool getRelay(float inputTempC) const;
 
 public:
-    explicit thermoreg_t(const temperature_t &mTemp) : m_temp(mTemp) {}
+    thermoreg_t(float mPointC, float mHysteresis, float mInertia, const temperature_t &mTemp)
+        : m_pointC(mPointC),
+          m_hysteresis(mHysteresis),
+          m_inertia(mInertia),
+          m_temp(mTemp)
+    {}
 
 public:
     void begin() override;
@@ -54,5 +58,8 @@ public:
 #endif
 
 private:
+    const float m_pointC;
+    const float m_hysteresis;
+    const float m_inertia;
     const temperature_t& m_temp;
 };

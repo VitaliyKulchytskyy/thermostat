@@ -1,6 +1,7 @@
 #pragma once
 #include "Metadata.h"
 #include "SaveHandler.h"
+#include <avr/eeprom.h>
 
 namespace ThreadHandler {
     /// Setup the device

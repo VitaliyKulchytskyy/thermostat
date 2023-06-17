@@ -19,7 +19,7 @@ log_t thermoreg_t::request() {
     return thermoregulation(tempC);
 }
 
-log_t thermoreg_t::thermoregulation(float tempC) {
+log_t thermoreg_t::thermoregulation(float tempC) const {
     const bool state = getRelay(tempC);
     digitalWrite(PIN_RELAY_PUMP, state);
 
@@ -42,21 +42,21 @@ log_t thermoreg_t::setState(log_t logCode, bool &outState, bool getState) {
     return logCode;
 }
 
-bool thermoreg_t::getRelay(float inputTempC, float k) {
+bool thermoreg_t::getRelay(float inputTempC) const {
     static float prevInput = 0.0;
     static bool relayStat = false;
-    static const float hysteresis = HYSTERESIS_C / 2;
+    static const float hysteresis = m_hysteresis / 2;
     float signal;
 
-    if (k > 0) {
-        signal = inputTempC + ((inputTempC - prevInput) / THREAD_THERMOSTAT_MS) * k;
+    if (m_inertia > 0) {
+        signal = inputTempC + ((inputTempC - prevInput) / THREAD_THERMOSTAT_MS) * m_inertia;
         prevInput = inputTempC;
     } else {
         signal = inputTempC;
     }
 
-    if (signal < (SET_POINT_C - hysteresis)) relayStat = false;
-    else if (signal > (SET_POINT_C + hysteresis)) relayStat = true;
+    if (signal < (m_pointC - hysteresis))       relayStat = false;
+    else if (signal > (m_pointC + hysteresis))  relayStat = true;
 
     #ifdef PLOT_MODE
         Serial.print("inputTempC:");
