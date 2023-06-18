@@ -6,6 +6,7 @@
 
 /**
  * The structure of the format collection
+ *
  * @tparam N the size of the input array of formats
  */
 template<size_t N>
@@ -24,7 +25,7 @@ public:
 
     log_t request() override;
 
-#ifdef DEBUG_REQUEST_MODE
+#if (defined DEBUG_REQUEST_MODE || defined DEBUG_REQUEST_MODE_LOW_MEMORY)
     void toSerial() const override;
 
     /// Prints the log code of the last request
@@ -101,7 +102,7 @@ log_t metadata_t<N>::request() {
     return requestLog;
 }
 
-#ifdef DEBUG_REQUEST_MODE
+#if (defined DEBUG_REQUEST_MODE || defined DEBUG_REQUEST_MODE_LOW_MEMORY)
 template<size_t N>
 void metadata_t<N>::toSerial() const {
     this->printLog();

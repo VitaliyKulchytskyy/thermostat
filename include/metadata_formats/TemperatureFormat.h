@@ -13,6 +13,7 @@ private:
 #if isDSModule(TEMP_TYPE_INSIDE) || isDSModule(TEMP_TYPE_OUTSIDE)
     /**
      * Sets temperature by reading the DS18B20 module
+     *
      * @param [in] deviceIndex index of the module
      * @param [out] outTempC set to the parameter
      * @retval true if the deviceIndex can be read
@@ -24,6 +25,7 @@ private:
 #if isNTCModule(TEMP_TYPE_INSIDE) || isNTCModule(TEMP_TYPE_OUTSIDE)
     /**
      * Sets temperature by reading the NTC_XK module
+     *
      * @param [in] readPin pin of the temperature module
      * @param [out] outTempC set to the parameter
      * @retval true if the readPin can be read
@@ -44,13 +46,14 @@ public:
 
     log_t request() override;
 
-#ifdef DEBUG_REQUEST_MODE
+#if (defined DEBUG_REQUEST_MODE || defined DEBUG_REQUEST_MODE_LOW_MEMORY)
     void toSerial() const override;
 #endif
 
 #if isDSModule(TEMP_TYPE_INSIDE) || isDSModule(TEMP_TYPE_OUTSIDE)
     /**
      * Reads whether the DS18B20 modules supplied by parasite power
+     *
      * @retval true the DS18B20 modules supplied by parasite power
      * @retval false the DS18B20 modules don't supply by parasite power
      */

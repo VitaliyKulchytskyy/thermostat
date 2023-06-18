@@ -26,7 +26,7 @@ log_t light_t::request() {
     return 0;
 }
 
-#ifdef DEBUG_REQUEST_MODE
+#if (defined DEBUG_REQUEST_MODE || defined DEBUG_REQUEST_MODE_LOW_MEMORY)
 void light_t::toSerial() const {
     Serial.print("Light sensor: ");
     Serial.println(m_lux);

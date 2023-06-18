@@ -23,7 +23,7 @@ public:
 
     log_t request() override;
 
-#ifdef DEBUG_REQUEST_MODE
+#if (defined DEBUG_REQUEST_MODE || defined DEBUG_REQUEST_MODE_LOW_MEMORY)
     void toSerial() const override;
 #endif
 };

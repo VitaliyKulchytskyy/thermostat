@@ -1,11 +1,14 @@
 #pragma once
 #include "Macros.h"
 
+// LOW MEMORY - the Low Memory Mode disable saving on an SD card
 
 /* Debug modes */
 /// Prints information about format parameters per request
 //#define DEBUG_REQUEST_MODE
-/// Build a run time graphic of temperature measurement and the thermoregulation process. Disable other debug modes
+/// [LOW MEMORY] Like DEBUG_REQUEST_MODE but using low memory
+//#define DEBUG_REQUEST_MODE_LOW_MEMORY
+/// [LOW MEMORY] Build a run time graphic of temperature measurement and the thermoregulation process.
 //#define PLOT_MODE
 /// Debug the threads
 //#define DEBUG_THREAD_MODE
@@ -13,16 +16,24 @@
 //#define DEBUG_SAVE_HANDLER_MODE
 /// Debug the integrity of serialized image
 //#define DEBUG_SERIALIZATION
+/// [LOW MEMORY] Debug the config file deserialization
 //#define DEBUG_CONFIG_DESERIALIZATION
+/// [LOW MEMORY] Print saved parameters from the config file
+//#define DEBUG_SAVED_CONFIG
+/// Enable communication via serial port and methods for debugging (DataInfo::printRawData)
+//#define DEBUG_FREEMODE
+/// [LOW MEMORY] Like DEBUG_FREEMODE but using low memory
+//#define DEBUG_FREEMODE_LOW_MEMORY
 
 /* SD card */
 /// Pin of chip select
 #define SD_CHIP_SELECT          4
-/// The value of how many files can be stored without an SD card
-#ifdef PLOT_MODE
+#if isLowMemoryDebugMode()
+    /// The value of how many files can be stored without an SD card
     #define FILE_QUEUE_SIZE     1
 #else
-    #define FILE_QUEUE_SIZE     7
+    /// The value of how many files can be stored without an SD card
+    #define FILE_QUEUE_SIZE     5
 #endif
 
 
@@ -50,14 +61,14 @@
 
 
 /* Thermoregulation settings */
-/// The value of hysteresis window
-#define HYSTERESIS_C            4.0
-/// The value of temperature needs to be kept
-#define SET_POINT_C             34
-/// The coefficient of system inertia
-#define THERMOSTAT_INERTIA      0.5
 /// The pin number connected to the relay, which control the pump
-#define PIN_RELAY_PUMP          5
+#define PIN_RELAY_PUMP              5
+
+
+/* Other pins */
+/// The pin number that enables or disables uploading configuration
+/// at the initialization of the device
+#define PIN_ENABLE_UPLOAD_CONFIG    3
 
 
 /* Threads settings */
@@ -71,5 +82,3 @@
 #define ADDRESS_INERTIA             8
 #define ADDRESS_THREAD_THERMOSTAT   12
 #define ADDRESS_THREAD_SAVE_DATA    16
-
-

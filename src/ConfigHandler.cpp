@@ -3,18 +3,10 @@
 
 ConfigHandler::ConfigHandler(uint8_t *mpRawConfig)
     : m_pRawConfig(mpRawConfig)
-{
-    #ifdef DEBUG_CONFIG_DESERIALIZATION
-        Serial.println("[Config debug]");
-    #endif
-}
+{}
 
 ConfigHandler::~ConfigHandler() {
     delete[] m_pRawConfig;
-
-    #ifdef DEBUG_CONFIG_DESERIALIZATION
-        Serial.println("=================");
-    #endif
 }
 
 void ConfigHandler::setupThermostat(float& setTemperaturePoint,
@@ -37,7 +29,7 @@ void ConfigHandler::setupThermostat(float& setTemperaturePoint,
 void ConfigHandler::setupRTC() const {
     auto temp = new uint8_t [DATE_FORMAT_SIZE]{};
     memcpy(temp, &m_pRawConfig[DATE_FORMAT_OFFSET], DATE_FORMAT_SIZE);
-    //date_t::setTime(temp);
+    date_t::setTime(temp);
 
     #ifdef DEBUG_CONFIG_DESERIALIZATION
         DataInfo::printRawData(temp, 6, DEC);

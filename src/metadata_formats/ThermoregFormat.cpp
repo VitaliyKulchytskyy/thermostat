@@ -3,7 +3,15 @@
 
 void thermoreg_t::begin() {
     pinMode(PIN_RELAY_PUMP, OUTPUT);
-    getRelay(m_temp.insideTemperatureC);
+
+    #ifdef DEBUG_SAVED_CONFIG
+        Serial.print("Point C: ");
+        Serial.println(m_pointC);
+        Serial.print("Hysteresis: ");
+        Serial.println(m_hysteresis);
+        Serial.print("Inertia: ");
+        Serial.println(m_inertia);
+    #endif
 }
 
 size_t thermoreg_t::size() const {
@@ -43,41 +51,46 @@ log_t thermoreg_t::setState(log_t logCode, bool &outState, bool getState) {
 }
 
 bool thermoreg_t::getRelay(float inputTempC) const {
-    static float prevInput = 0.0;
-    static bool relayStat = false;
-    static const float hysteresis = m_hysteresis / 2;
+    static float prevInput = inputTempC;
+    static bool relayState = false;
+
+    static const float halfHysteresis = m_hysteresis / 2;
     float signal;
 
     if (m_inertia > 0) {
-        signal = inputTempC + ((inputTempC - prevInput) / THREAD_THERMOSTAT_MS) * m_inertia;
+        signal = inputTempC + ((inputTempC - prevInput) / ((float)m_intervalMs / 1000)) * m_inertia;
         prevInput = inputTempC;
     } else {
         signal = inputTempC;
     }
 
-    if (signal < (m_pointC - hysteresis))       relayStat = false;
-    else if (signal > (m_pointC + hysteresis))  relayStat = true;
+    if (signal < (m_pointC - halfHysteresis))       relayState = false;
+    else if (signal > (m_pointC + halfHysteresis))  relayState = true;
 
     #ifdef PLOT_MODE
+        Serial.print("signal:");
+        Serial.print(signal);
+        Serial.print(",");
+
         Serial.print("inputTempC:");
         Serial.print(inputTempC);
         Serial.print(",");
 
         Serial.print("setPointC:");
-        Serial.print(SET_POINT_C);
+        Serial.print(m_pointC);
         Serial.print(",");
 
         Serial.print("lowHysteresis:");
-        Serial.print(SET_POINT_C - hysteresis);
+        Serial.print(m_pointC - halfHysteresis);
         Serial.print(",");
 
         Serial.print("highHysteresis:");
-        Serial.print(SET_POINT_C + hysteresis);
+        Serial.print(m_pointC + halfHysteresis);
         Serial.print(",");
 
         Serial.print("relayState_x10:");
-        Serial.println(relayStat * 10);
+        Serial.println(relayState * 10);
     #endif
 
-    return relayStat;
+    return relayState;
 }

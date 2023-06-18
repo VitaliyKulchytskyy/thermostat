@@ -6,19 +6,20 @@ namespace {
     light_t g_light;
     thermoreg_t g_thermoreg(eeprom_read_float(ADDRESS_POINT_C),
                             eeprom_read_float(reinterpret_cast<const float *>(ADDRESS_HYSTERESIS)),
-                            eeprom_read_float(reinterpret_cast<const float *>(ADDRESS_INERTIA)), g_tempC);
+                            eeprom_read_float(reinterpret_cast<const float *>(ADDRESS_INERTIA)),
+                            eeprom_read_dword(reinterpret_cast<const uint32_t *>(ADDRESS_THREAD_THERMOSTAT)),
+                            g_tempC);
 
     FormatBase* g_formats[4]{&g_date, &g_tempC, &g_thermoreg, &g_light};
     constexpr size_t formatsNum = sizeof(g_formats) / sizeof(g_formats[0]);
     metadata_t<formatsNum> metadata(g_formats);
-
     SaveHandler saver(metadata.size());
 
-    /**
-     * Saves the save state of the previous image in a way to detects
-     * when the SD card is inserted again
-     */
+    /// Saves the save state of the previous image in a way to detects
+    /// when the SD card is inserted again
     bool isPrevImageSaved = false;
+    /// Name of the configuration file
+    const char* configFile = "config.bin";
 };
 
 namespace {
@@ -27,11 +28,13 @@ namespace {
         static bool isStackOverflow = false;
         metadata.requestLog |= ((isStackOverflow & !isPrevImageSaved) << ERROR_FILE_QUEUE_OVERFLOW);
 
-        auto temp = metadata.serialize();
-        #if (defined DEBUG_REQUEST_MODE && !defined PLOT_MODE)
+
+        #if (!defined PLOT_MODE && (defined DEBUG_REQUEST_MODE || defined DEBUG_REQUEST_MODE_LOW_MEMORY))
             metadata.toSerial();
             Serial.println();
         #endif
+
+        auto temp = metadata.serialize();
         isStackOverflow = saver.add(temp);
         delete[] temp;
     }
@@ -44,7 +47,7 @@ namespace {
 
         isPrevImageSaved = saver.upload(g_date.getFilename());
 
-        #if (defined(DEBUG_THREAD_MODE) && !defined(PLOT_MODE))
+        #if (defined DEBUG_THREAD_MODE && !defined PLOT_MODE)
             Serial.println("-> save metadata");
         #endif
     }
@@ -66,70 +69,80 @@ namespace {
     }
 
     /**
-     * Read the file of unique format to set time on the unsettled RTC module.
-     * @note The bin format: Hours (0-23), Minutes (0-59), Seconds (0-59),
-     * Day (1-31), Month (1-12), Year (23-99).\n
-     * In a way to ignore a parameter use \b 0xFF value.
-     * @note In a way to reset the RTC module put the battery off and turn down the device for a while
-     * @example File format:\n
-     * Set only year (d - decimal): 0xFF 0xFF 0xFF 0xFF 0xFF d23;\n
-     * Set date (16:14:30 13/05/2023): d16 d14 d30 d13 d5 d23
-     * @retval true if the file exists
-     * @retval true if the file doesn't exist
+     * Setup parameters from the configuration file
+     *
+     * @retval true if the configuration file could be open
+     * @retval false if the configuration file couldn't be open
      */
-    bool readRTCSetupFile() {
-        if(!SD.begin(SD_CHIP_SELECT))
+    bool setupParameters() {
+        auto temp = new uint8_t [CONFIG_LENGTH];
+        bool state = SaveHandler::readFileBytes(configFile, temp, CONFIG_LENGTH);
+
+        #ifdef DEBUG_CONFIG_DESERIALIZATION
+            DataInfo::printRawData(temp, CONFIG_LENGTH);
+        #endif
+
+        if(!state) {
+            delete[] temp;
             return false;
+        }
 
-        File readFile = SD.open("config.bin", FILE_READ);
-        if(!readFile)
-            return false;
+        auto config = new ConfigHandler(temp);
+        config->setupRTC();
 
-        const size_t dateSize = g_date.size();
-        auto buf = new uint8_t[dateSize];
-        readFile.readBytes(buf, dateSize);
-        readFile.close();
+        float pointC = 0.0, hysteresis = 0.0, inertia = 0.0;
+        config->setupThermostat(pointC, hysteresis, inertia);
+        eeprom_update_float(ADDRESS_POINT_C, pointC);
+        eeprom_update_float(reinterpret_cast<float *>(ADDRESS_HYSTERESIS), hysteresis);
+        eeprom_update_float(reinterpret_cast<float *>(ADDRESS_INERTIA), inertia);
 
-        auto bufDate = g_date.serialize();
+        uint32_t thrdThermostat = 0, thrdSaveData = 0;
+        config->setupThreads(thrdThermostat, thrdSaveData);
+        eeprom_update_dword(reinterpret_cast<uint32_t *>(ADDRESS_THREAD_THERMOSTAT), thrdThermostat);
+        eeprom_update_dword(reinterpret_cast<uint32_t *>(ADDRESS_THREAD_SAVE_DATA), thrdSaveData);
 
-        for(size_t i = 0; i < dateSize; i++)
-            if(buf[i] == 0xFF)
-                buf[i] = bufDate[i];
-
-        date_t::setTime(buf);
-
-        delete[] bufDate;
-        delete[] buf;
-
+        delete config;
+        delete[] temp;
         return true;
     }
 };
 
 void ThreadHandler::begin() {
+    pinMode(PIN_ENABLE_UPLOAD_CONFIG, INPUT);
     metadata.begin();
-    log_t logCode = metadata.request();
 
-    if(1 & (logCode >> ERROR_RTC_SET_UP))
-        readRTCSetupFile();
-
-    eeprom_update_float(ADDRESS_POINT_C, 34.0);
-    eeprom_update_float(reinterpret_cast<float *>(ADDRESS_HYSTERESIS), 4.0);
-    eeprom_update_float(reinterpret_cast<float *>(ADDRESS_INERTIA), 0.5);
-    eeprom_update_dword(reinterpret_cast<uint32_t *>(ADDRESS_THREAD_THERMOSTAT), 1000);
-    eeprom_update_dword(reinterpret_cast<uint32_t *>(ADDRESS_THREAD_SAVE_DATA), 5000);
+    if(digitalRead(PIN_ENABLE_UPLOAD_CONFIG) == HIGH) {
+        bool isConfigRead = setupParameters();
+        metadata.requestLog |= ((!isConfigRead) << BAD_CONFIG_FILE);
+    }
 }
 
 void ThreadHandler::run() {
     const uint32_t thrdThermostatInter = eeprom_read_dword(reinterpret_cast<const uint32_t *>(ADDRESS_THREAD_THERMOSTAT));
     const uint32_t thrdSaveDataInter = eeprom_read_dword(reinterpret_cast<const uint32_t *>(ADDRESS_THREAD_SAVE_DATA));
 
+    #ifdef DEBUG_SAVED_CONFIG
+        Serial.print("[Saved config]\nThermostat inter: ");
+        Serial.println(thrdThermostatInter);
+        Serial.print("Save data inter: ");
+        Serial.println(thrdSaveDataInter);
+    #endif
+
     while(true) {
         const uint64_t getTime = millis();
 
-        if(uint64_t(getTime % thrdThermostatInter) == 0)
+        if(uint64_t(getTime % thrdThermostatInter) == 0) {
             requestAllModules();
+        }
 
-        if(uint64_t(getTime % thrdSaveDataInter) == 0)
-            saveMetadataOnSD();
+        #if !isLowMemoryDebugMode()
+            if(uint64_t(getTime % thrdSaveDataInter) == 0) {
+                saveMetadataOnSD();
+            }
+        #elif defined DEBUG_REQUEST_MODE_LOW_MEMORY
+            if(uint64_t(getTime % thrdSaveDataInter) == 0) {
+                saveMetadataImage();
+            }
+        #endif
     }
 }

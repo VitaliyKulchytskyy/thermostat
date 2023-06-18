@@ -13,8 +13,6 @@ void DataInfo::printRawData(uint8_t *pRawData, uint8_t formatSize, uint8_t outpu
 #endif
 
 
-File  SaveHandler::m_binFile;
-
 SaveHandler::SaveHandler(size_t rawArraySize)
         : m_rawArraySize(rawArraySize),
           m_mdQueue{new cppQueue(rawArraySize,
@@ -49,40 +47,41 @@ bool SaveHandler::upload(const char *filename) {
         return false;
 
     while (!m_mdQueue->isEmpty()) {
-        m_binFile = SD.open(filename, FILE_WRITE);
+        File* writeFile = new File(SD.open(filename, FILE_WRITE));
 
-        // Біс його знає чому при взаємодії з BH1750 відкритий файл думає,
-        // що він закритий, хоч він нормально записується без перевірки нижче
-        // if(!m_binFile)
-        //     return false;
+        // if(!*writeFile)
+        //      return false;
 
         auto temp = new uint8_t [m_rawArraySize];
         m_mdQueue->pop(temp);
 
-        m_binFile.write(temp, m_rawArraySize);
-        m_binFile.close();
-
-    #if (defined(DEBUG_SAVE_HANDLER_MODE) && !defined(PLOT_MODE))
-        Serial.println("--> save an image to the SD");
-    #elif (defined(DEBUG_SERIALIZATION) && !defined(PLOT_MODE))
-        Serial.println("<- Written on an SD:");
-        DataInfo::printRawData(temp, m_rawArraySize);
-        Serial.println();
-    #endif
+        writeFile->write(temp, m_rawArraySize);
+        writeFile->close();
+        #if (defined(DEBUG_SAVE_HANDLER_MODE) && !defined(PLOT_MODE))
+            Serial.println("--> save an image to the SD");
+        #elif (defined(DEBUG_SERIALIZATION) && !defined(PLOT_MODE))
+            Serial.println("<- Written on an SD:");
+            DataInfo::printRawData(temp, m_rawArraySize);
+            Serial.println();
+        #endif
 
         delete[] temp;
+        free(writeFile);
     }
 
     return true;
 }
 
-bool SaveHandler::readFile(const char *filename, uint8_t *&rpRawFile, size_t readBytes, size_t offset) {
-    m_binFile = SD.open(filename, FILE_READ);
-    if(!m_binFile)
+bool SaveHandler::readFileBytes(const char *filename, uint8_t *pRawFile, size_t readBytes) {
+    if(!SD.begin(SD_CHIP_SELECT))
         return false;
 
-    m_binFile.readBytes(&rpRawFile[offset], readBytes - offset);
+    File readFile = SD.open(filename, FILE_READ);
+    if(!readFile)
+        return false;
 
-    m_binFile.close();
+    readFile.readBytes(pRawFile, readBytes);
+    readFile.close();
+
     return true;
 }

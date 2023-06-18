@@ -2,6 +2,8 @@
 #include "Settings.h"
 #include "ThreadHandler.h"
 
+// TODO: знов мало пам'яті для запису на внутрішню пам'ять
+
 
 void setup() {
     #if isDebugModeEnable()

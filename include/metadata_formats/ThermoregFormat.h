@@ -11,6 +11,7 @@ private:
     /**
      * Handles the thermoregulation process by reading the input temperature.
      * The thermoregulation process proceeds by enabling or disabling the pump with cooling fluid
+     *
      * @param tempC input temperature
      * @retval INFO_THERMOREGULATION_START thermoregulation process has been started
      * @retval INFO_THERMOREGULATION_PROCESS thermoregulation process is running
@@ -20,6 +21,7 @@ private:
 
     /**
      * Handles the returning of the thermoregulation method (macros)
+     *
      * @param [in] logCode the log code of the thermoregulation process
      * @param [out] outState sets state before returning
      * @param [in] getState read and save state before returning
@@ -30,6 +32,7 @@ private:
     /**
      * Enable or disable the pump based on inputTempC value and
      * measurement of temperature rise rate
+     *
      * @param inputTempC input temperature
      * @retval true enable the pump
      * @retval false disable the pump
@@ -37,10 +40,15 @@ private:
     bool getRelay(float inputTempC) const;
 
 public:
-    thermoreg_t(float mPointC, float mHysteresis, float mInertia, const temperature_t &mTemp)
-        : m_pointC(mPointC),
-          m_hysteresis(mHysteresis),
-          m_inertia(mInertia),
+    thermoreg_t(float pointC,
+                float hysteresis,
+                float inertia,
+                uint32_t intervalMs,
+                temperature_t &mTemp)
+        : m_pointC(pointC),
+          m_hysteresis(hysteresis),
+          m_inertia(inertia),
+          m_intervalMs(intervalMs),
           m_temp(mTemp)
     {}
 
@@ -53,7 +61,7 @@ public:
 
     log_t request() override;
 
-#ifdef DEBUG_REQUEST_MODE
+#if (defined DEBUG_REQUEST_MODE || defined DEBUG_REQUEST_MODE_LOW_MEMORY)
     void toSerial() const override {}
 #endif
 
@@ -61,5 +69,6 @@ private:
     const float m_pointC;
     const float m_hysteresis;
     const float m_inertia;
-    const temperature_t& m_temp;
+    const uint32_t m_intervalMs;
+    temperature_t& m_temp;
 };

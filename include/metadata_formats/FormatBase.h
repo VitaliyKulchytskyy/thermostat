@@ -15,7 +15,7 @@ public:
     /// Makes a request to update the format's values
     virtual log_t request() = 0;
 
-#ifdef DEBUG_REQUEST_MODE
+#if (defined DEBUG_REQUEST_MODE || defined DEBUG_REQUEST_MODE_LOW_MEMORY)
     /// Prints an information about format's values
     virtual void toSerial() const = 0;
 #endif

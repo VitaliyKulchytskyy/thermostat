@@ -73,11 +73,11 @@ log_t temperature_t::request() {
     return errorCode;
 }
 
-#ifdef DEBUG_REQUEST_MODE
+#if (defined DEBUG_REQUEST_MODE || defined DEBUG_REQUEST_MODE_LOW_MEMORY)
 void temperature_t::toSerial() const {
-    Serial.print("inside: ");
+    Serial.print("inside (thermreg): ");
     Serial.print(insideTemperatureC);
-    Serial.print("C | outside (+): ");
+    Serial.print("C | outside: ");
     Serial.print(outsideTemperatureC);
     Serial.println("C");
 }
