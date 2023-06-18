@@ -23,13 +23,19 @@ namespace DataInfo {
  */
 class SaveHandler {
 public:
+    /**
+     * Read content from a file and write to a buffer
+     *
+     * @param filename name of the file
+     * @param pBuffer buffer
+     * @param readBytes how many bytes read from the file
+     * @retval true if a file could be open
+     * @retval false if a file couldn't be open
+     */
     static bool readFileBytes(const char *filename,
-                              uint8_t *pRawFile,
+                              uint8_t *pBuffer,
                               size_t readBytes);
 
-    // static bool rmFile(const char *filename) { return SD.rmdir(filename); }
-
-    // static bool isFileExists(const char *filename) { return SD.exists(filename); }
 public:
     explicit SaveHandler(size_t rawArraySize);
 

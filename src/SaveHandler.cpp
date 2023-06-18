@@ -72,7 +72,7 @@ bool SaveHandler::upload(const char *filename) {
     return true;
 }
 
-bool SaveHandler::readFileBytes(const char *filename, uint8_t *pRawFile, size_t readBytes) {
+bool SaveHandler::readFileBytes(const char *filename, uint8_t *pBuffer, size_t readBytes) {
     if(!SD.begin(SD_CHIP_SELECT))
         return false;
 
@@ -80,7 +80,7 @@ bool SaveHandler::readFileBytes(const char *filename, uint8_t *pRawFile, size_t 
     if(!readFile)
         return false;
 
-    readFile.readBytes(pRawFile, readBytes);
+    readFile.readBytes(pBuffer, readBytes);
     readFile.close();
 
     return true;

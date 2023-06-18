@@ -49,7 +49,7 @@ public:
           m_hysteresis(hysteresis),
           m_inertia(inertia),
           m_intervalMs(intervalMs),
-          m_temp(mTemp)
+          m_rTemp(mTemp)
     {}
 
 public:
@@ -66,9 +66,15 @@ public:
 #endif
 
 private:
+    /// The maximum acceptable temperature.
+    /// After reaching this temperature the thermoregulation process will start
     const float m_pointC;
+    /// The value of hysteresis. Used to reduce switching the relay
     const float m_hysteresis;
+    /// The value of system inertia. Used to speed up or slow down thermoregulation process
     const float m_inertia;
+    /// The interval of requesting temperature modules (in milliseconds)
     const uint32_t m_intervalMs;
-    temperature_t& m_temp;
+    /// The reference on handler of temperature modules
+    temperature_t& m_rTemp;
 };

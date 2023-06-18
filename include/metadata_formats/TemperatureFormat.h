@@ -63,6 +63,7 @@ public:
 private:
 #if isDSModule(TEMP_TYPE_INSIDE) || isDSModule(TEMP_TYPE_OUTSIDE)
     static OneWire m_oneWire;
+    /// An address of the temperature module (only for DS modules)
     static DallasTemperature m_sensors;
     /// The temperature module used to record temperature of the main device
     static DeviceAddress m_dsAddr;

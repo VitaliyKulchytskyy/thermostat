@@ -23,7 +23,7 @@ uint8_t *thermoreg_t::serialize() const {
 }
 
 log_t thermoreg_t::request() {
-    const float tempC = m_temp.insideTemperatureC;
+    const float tempC = m_rTemp.insideTemperatureC;
     return thermoregulation(tempC);
 }
 

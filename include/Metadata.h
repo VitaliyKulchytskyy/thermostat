@@ -36,6 +36,7 @@ private:
     FormatBase* m_formats[N];
 
 public:
+    /// Log code of a request
     log_t requestLog = 0;
 };
 
